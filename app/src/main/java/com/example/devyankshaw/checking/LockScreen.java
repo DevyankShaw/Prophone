@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +31,8 @@ public class LockScreen extends AppCompatActivity {
 
     Handler collapseNotificationHandler;
 
+    private TextView txtLockScreen;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
@@ -44,6 +47,27 @@ public class LockScreen extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         registerReceiver(innerReceiver, intentFilter);*/
 
+
+        txtLockScreen = findViewById(R.id.txtLockScreen);
+        txtLockScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+
+    }
+
+    //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
+    @Override
+    public void finish() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.finishAndRemoveTask();
+        }
+        else {
+            super.finish();
+        }
     }
 
     @Override
@@ -178,6 +202,5 @@ public class LockScreen extends AppCompatActivity {
             }
         }
     }*/
-
 
 }
