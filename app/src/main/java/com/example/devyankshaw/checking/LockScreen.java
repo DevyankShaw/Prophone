@@ -1,5 +1,6 @@
 package com.example.devyankshaw.checking;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -70,6 +71,7 @@ public class LockScreen extends AppCompatActivity {
         // Not calling **super**, disables back button in current screen.
     }
 
+
 //    @Override
 //    protected void onDestroy() {
 //        super.onDestroy();
@@ -115,6 +117,12 @@ public class LockScreen extends AppCompatActivity {
 
         // Activity's been paused
         isPaused = true;
+
+        //Block recent task when password/pin activity is open
+        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        activityManager.moveTaskToFront(getTaskId(), 0);
     }
 
     @Override
