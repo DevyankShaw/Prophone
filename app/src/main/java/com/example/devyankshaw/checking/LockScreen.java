@@ -32,6 +32,7 @@ public class LockScreen extends AppCompatActivity {
     Handler collapseNotificationHandler;
 
     private TextView txtLockScreen;
+    private HomeKeyLocker mHomeKeyLocker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,17 +48,34 @@ public class LockScreen extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         registerReceiver(innerReceiver, intentFilter);*/
 
+        mHomeKeyLocker = new HomeKeyLocker();
 
         txtLockScreen = findViewById(R.id.txtLockScreen);
         txtLockScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
+//                mHomeKeyLocker.unlock();
             }
         });
 
+//        mHomeKeyLocker.lock(this);
 
     }
+
+    //Blocked back button pressed when the pin/password screen is active
+    @Override
+    public void onBackPressed() {
+        // super.onBackPressed();
+        // Not calling **super**, disables back button in current screen.
+    }
+
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        mHomeKeyLocker.unlock();
+//        mHomeKeyLocker = null;
+//    }
 
     //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
     @Override
