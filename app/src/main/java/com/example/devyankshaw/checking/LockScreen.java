@@ -1,7 +1,10 @@
 package com.example.devyankshaw.checking;
 
 import android.app.ActivityManager;
+import android.app.PendingIntent;
+import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,16 +13,21 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
 
 public class LockScreen extends AppCompatActivity {
 
@@ -33,7 +41,8 @@ public class LockScreen extends AppCompatActivity {
     Handler collapseNotificationHandler;
 
     private TextView txtLockScreen;
-    private HomeKeyLocker mHomeKeyLocker;
+
+    private int currentApiVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,24 +54,43 @@ public class LockScreen extends AppCompatActivity {
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         setContentView(R.layout.activity_lock_screen);
 
-        /*InnerRecevier innerReceiver = new InnerRecevier();
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-        registerReceiver(innerReceiver, intentFilter);*/
-
-        mHomeKeyLocker = new HomeKeyLocker();
 
         txtLockScreen = findViewById(R.id.txtLockScreen);
         txtLockScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                finishAffinity(); //kill other activities
                 finish();
-//                mHomeKeyLocker.unlock();
             }
         });
 
-//        mHomeKeyLocker.lock(this);
+        HomeWatcher mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                // do something here...
+//                Toast.makeText(LockScreen.this, "Home Button Pressed", Toast.LENGTH_LONG).show();
+                Intent notificationIntent = new Intent(LockScreen.this, LockScreen.class);
+                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PendingIntent pendingIntent = PendingIntent.getActivity(LockScreen.this, 0, notificationIntent, 0);
+                try
+                {
+                    pendingIntent.send();
+                }
+                catch (PendingIntent.CanceledException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onHomeLongPressed() {
+//                Toast.makeText(LockScreen.this, "Home Button Long Pressed", Toast.LENGTH_LONG).show();
 
+            }
+        });
+        mHomeWatcher.startWatch();
     }
+
 
     //Blocked back button pressed when the pin/password screen is active
     @Override
@@ -71,13 +99,6 @@ public class LockScreen extends AppCompatActivity {
         // Not calling **super**, disables back button in current screen.
     }
 
-
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        mHomeKeyLocker.unlock();
-//        mHomeKeyLocker = null;
-//    }
 
     //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
     @Override
@@ -109,6 +130,19 @@ public class LockScreen extends AppCompatActivity {
             }
 
 
+       /* //Removes navigation bar
+        if(currentApiVersion >= Build.VERSION_CODES.KITKAT && hasFocus)
+        {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }*/
+
+
         }
 
     @Override
@@ -123,6 +157,7 @@ public class LockScreen extends AppCompatActivity {
                 .getSystemService(Context.ACTIVITY_SERVICE);
 
         activityManager.moveTaskToFront(getTaskId(), 0);
+
     }
 
     @Override
@@ -131,6 +166,7 @@ public class LockScreen extends AppCompatActivity {
 
         // Activity's been resumed
         isPaused = false;
+
 
     }
 
@@ -205,28 +241,6 @@ public class LockScreen extends AppCompatActivity {
         }
     }
 
-    /*// for home listen
-    class InnerRecevier extends BroadcastReceiver {
 
-        final String SYSTEM_DIALOG_REASON_KEY = "reason";
-        final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
-                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
-                if (reason != null) {
-                    if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
-                        // home is Pressed
-                        Intent intentone = new Intent(context.getApplicationContext(), LockScreen.class);
-                        intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intentone);
-//                        Toast.makeText(context, "Home Button Pressed", Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-        }
-    }*/
 
 }

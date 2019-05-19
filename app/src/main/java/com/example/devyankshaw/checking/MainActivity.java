@@ -2,6 +2,8 @@ package com.example.devyankshaw.checking;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 //        IntentFilter filter1 = new IntentFilter(Intent.ACTION_USER_UNLOCKED);
 //        registerReceiver(userPresentBroadcastReceiver, filter1);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
             /*If the android version is >= API 23/Marshmallow && if the settings of the device doesn't allow/gives permission
                 to overlay the widget to others then this if blocks executes
              */
@@ -60,9 +62,12 @@ public class MainActivity extends AppCompatActivity {
             Uri.parse("package:" + getPackageName());
             startActivityForResult(intent, REQUEST_CODE);
             //startActivity(intent);
-        }else {
+        } else {
             floatTheViewOnTheScreen();
         }
+
+
+
     }
 
     private void floatTheViewOnTheScreen() {
