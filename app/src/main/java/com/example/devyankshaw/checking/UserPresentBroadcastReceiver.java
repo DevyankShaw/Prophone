@@ -17,14 +17,6 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
          * device wakes up (e.g when the keyguard is gone)
          * */
         if(Intent.ACTION_USER_PRESENT.equals(intent.getAction())){
-//            Intent intent1 = new Intent();
-//            intent1.setClassName(context.getPackageName(), LockScreen.class.getName());
-//            intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            context.startActivity(intent1);
-
-//            Intent intentone = new Intent(context.getApplicationContext(), LockScreen.class);
-//            intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//            context.startActivity(intentone);
             Toast.makeText(context, "User Present", Toast.LENGTH_LONG).show();
         }
         /*Device is shutting down. This is broadcast when the device

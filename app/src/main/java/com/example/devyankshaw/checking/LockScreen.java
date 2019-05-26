@@ -24,6 +24,8 @@ import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,16 +44,15 @@ public class LockScreen extends AppCompatActivity {
 
     private TextView txtLockScreen;
 
-    private int currentApiVersion;
+    private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_POWER));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_FULLSCREEN|
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_FULLSCREEN|
+//                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         setContentView(R.layout.activity_lock_screen);
 
 
@@ -64,6 +65,7 @@ public class LockScreen extends AppCompatActivity {
             }
         });
 
+        //Blocks Home Button Pressed
         HomeWatcher mHomeWatcher = new HomeWatcher(this);
         mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
             @Override
@@ -99,6 +101,17 @@ public class LockScreen extends AppCompatActivity {
         // Not calling **super**, disables back button in current screen.
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (blockedKeys.contains(event.getKeyCode())) {
+
+
+            return true;
+        } else {
+
+            return super.dispatchKeyEvent(event);
+        }
+    }
 
     //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
     @Override
@@ -124,23 +137,7 @@ public class LockScreen extends AppCompatActivity {
                 sendBroadcast(closeDialog);//Sends signal/message  to the system
 
 
-
-                //Toast.makeText(LockScreen.this, "Your LongPress Power Button", Toast.LENGTH_SHORT).show();
-
             }
-
-
-       /* //Removes navigation bar
-        if(currentApiVersion >= Build.VERSION_CODES.KITKAT && hasFocus)
-        {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        }*/
 
 
         }

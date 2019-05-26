@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static com.example.devyankshaw.checking.App.CHANNEL_ID;
@@ -32,8 +31,6 @@ public class LockService extends Service {
         filter1.setPriority(999);
         registerReceiver(userPresentBroadcastReceiver, filter1);
 
-//        IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
-//        registerReceiver(userPresentBroadcastReceiver, filter);
 
         if(intent == null || intent.getAction() == null) {
             //Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();

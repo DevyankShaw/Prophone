@@ -25,16 +25,11 @@ import android.widget.Switch;
 public class MainActivity extends AppCompatActivity {
 
     private Switch swtSwitch;
-    private boolean checkLock;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
-    private Context context = MainActivity.this;
     public final static int REQUEST_CODE = 123;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_FULLSCREEN|
-//                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -45,14 +40,6 @@ public class MainActivity extends AppCompatActivity {
         boolean lockValue = settings.getBoolean("switchKeyLock", false);
         swtSwitch.setChecked(lockValue);
 
-//        IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
-//        registerReceiver(userPresentBroadcastReceiver, filter);
-//
-//        IntentFilter filter1 = new IntentFilter(Intent.ACTION_SCREEN_ON);
-//        registerReceiver(userPresentBroadcastReceiver, filter1);
-
-//        IntentFilter filter1 = new IntentFilter(Intent.ACTION_USER_UNLOCKED);
-//        registerReceiver(userPresentBroadcastReceiver, filter1);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
             /*If the android version is >= API 23/Marshmallow && if the settings of the device doesn't allow/gives permission
