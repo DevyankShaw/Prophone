@@ -34,7 +34,7 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
             Intent intentone = new Intent(context, LockScreen.class);
             intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_RECEIVER_FOREGROUND);
             context.startActivity(intentone);
-            Toast.makeText(context, "Action Screen On", Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, "Action Screen On", Toast.LENGTH_LONG).show();
         }
     }
 }

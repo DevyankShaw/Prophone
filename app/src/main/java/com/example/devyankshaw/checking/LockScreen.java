@@ -2,36 +2,32 @@ package com.example.devyankshaw.checking;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
-import android.app.admin.DevicePolicyManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
+import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.locks.Lock;
 
-public class LockScreen extends AppCompatActivity {
+public class LockScreen extends AppCompatActivity implements View.OnClickListener {
 
 
     // To keep track of activity's window focus
@@ -42,7 +38,10 @@ public class LockScreen extends AppCompatActivity {
 
     Handler collapseNotificationHandler;
 
-    private TextView txtLockScreen;
+    private Button btnSumbit;
+    private EditText edtPassword;
+    private ImageView imgClose;
+    private Button btnOne, btnTwo, btnThree, btnFour, btnFive, btnSix, btnSeven, btnEight, btnNine, btnZero;
 
     private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_POWER));
 
@@ -55,13 +54,57 @@ public class LockScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
 
+        btnOne = findViewById(R.id.btnOne);
+        btnTwo = findViewById(R.id.btnTwo);
+        btnThree = findViewById(R.id.btnThree);
+        btnFour = findViewById(R.id.btnFour);
+        btnFive = findViewById(R.id.btnFive);
+        btnSix = findViewById(R.id.btnSix);
+        btnSeven = findViewById(R.id.btnSeven);
+        btnEight = findViewById(R.id.btnEight);
+        btnNine = findViewById(R.id.btnNine);
+        btnZero = findViewById(R.id.btnZero);
 
-        txtLockScreen = findViewById(R.id.txtLockScreen);
-        txtLockScreen.setOnClickListener(new View.OnClickListener() {
+        edtPassword = findViewById(R.id.edtPassword);
+
+        btnOne.setOnClickListener(this);
+        btnTwo.setOnClickListener(this);
+        btnThree.setOnClickListener(this);
+        btnFour.setOnClickListener(this);
+        btnFive.setOnClickListener(this);
+        btnSix.setOnClickListener(this);
+        btnSeven.setOnClickListener(this);
+        btnEight.setOnClickListener(this);
+        btnNine.setOnClickListener(this);
+        btnZero.setOnClickListener(this);
+
+
+
+        imgClose = findViewById(R.id.imgClose);
+        imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                finishAffinity(); //kill other activities
-                finish();
+                edtPassword.getText().clear();
+            }
+        });
+
+        btnSumbit = findViewById(R.id.btnSubmit);
+        btnSumbit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(edtPassword.getText().toString().equals("8246")) {
+                    if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("micromax") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+                        finishAffinity(); //kill other activities
+                    } else {
+                        finish();
+                    }
+                }else{
+                    Toast.makeText(LockScreen.this, "Wrong Password!!!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -91,6 +134,9 @@ public class LockScreen extends AppCompatActivity {
             }
         });
         mHomeWatcher.startWatch();
+
+
+
     }
 
 
@@ -101,6 +147,7 @@ public class LockScreen extends AppCompatActivity {
         // Not calling **super**, disables back button in current screen.
     }
 
+    //Block volume button
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (blockedKeys.contains(event.getKeyCode())) {
@@ -239,5 +286,40 @@ public class LockScreen extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btnOne:
+                edtPassword.append("1");
+                break;
+            case R.id.btnTwo:
+                edtPassword.append("2");
+                break;
+            case R.id.btnThree:
+                edtPassword.append("3");
+                break;
+            case R.id.btnFour:
+                edtPassword.append("4");
+                break;
+            case R.id.btnFive:
+                edtPassword.append("5");
+                break;
+            case R.id.btnSix:
+                edtPassword.append("6");
+                break;
+            case R.id.btnSeven:
+                edtPassword.append("7");
+                break;
+            case R.id.btnEight:
+                edtPassword.append("8");
+                break;
+            case R.id.btnNine:
+                edtPassword.append("9");
+                break;
+            case R.id.btnZero:
+                edtPassword.append("0");
+                break;
 
+        }
+    }
 }

@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
+    private static final int IGNORE_BATTERY_OPTIMIZATION_REQUEST = 1002;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +56,60 @@ public class MainActivity extends AppCompatActivity {
             floatTheViewOnTheScreen();
         }
 
+        if(Build.BRAND.equalsIgnoreCase("xiaomi") ) {
+
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+            startActivity(intent);
+
+
+        }
+
+
+
+        if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
+            try {
+                Intent intent = new Intent();
+                intent.setClassName("com.coloros.safecenter",
+                        "com.coloros.safecenter.permission.startup.StartupAppListActivity");
+                startActivity(intent);
+            } catch (Exception e) {
+                try {
+                    Intent intent = new Intent();
+                    intent.setClassName("com.oppo.safe",
+                            "com.oppo.safe.permission.startup.StartupAppListActivity");
+                    startActivity(intent);
+
+                } catch (Exception ex) {
+                    try {
+                        Intent intent = new Intent();
+                        intent.setClassName("com.coloros.safecenter",
+                                "com.coloros.safecenter.startupapp.StartupAppListActivity");
+                        startActivity(intent);
+                    } catch (Exception exx) {
+
+                    }
+                }
+            }
+        }
+        //
+        if(Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+            autoLaunchVivo(MainActivity.this);
+        }
+
+        //Taking Ignore Battery Optimization permission
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                askIgnoreOptimization();
+            } else {
+                //accepted;
+            }
+        } else {
+
+        }
+
+//       Toast.makeText(this, Build.MANUFACTURER, Toast.LENGTH_LONG).show();
 
 
     }
@@ -76,5 +133,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private static void autoLaunchVivo(Context context) {
+        try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.iqoo.secure",
+                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"));
+            context.startActivity(intent);
+        } catch (Exception e) {
+            try {
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.vivo.permissionmanager",
+                        "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
+                context.startActivity(intent);
+            } catch (Exception ex) {
+                try {
+                    Intent intent = new Intent();
+                    intent.setClassName("com.iqoo.secure",
+                            "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager");
+                    context.startActivity(intent);
+                } catch (Exception exx) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void askIgnoreOptimization() {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, IGNORE_BATTERY_OPTIMIZATION_REQUEST);
+        }
+    }
+
 
 }
