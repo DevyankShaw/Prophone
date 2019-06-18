@@ -4,8 +4,10 @@ import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -26,6 +28,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static android.accounts.AccountManager.KEY_PASSWORD;
 
 public class LockScreen extends AppCompatActivity implements View.OnClickListener {
 
@@ -92,7 +96,9 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         btnSumbit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(edtPassword.getText().toString().equals("8246")) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LockScreen.this);
+                String password = prefs.getString(KEY_PASSWORD, "");
+                if(edtPassword.getText().toString().equals(password)) {
                     if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
                             Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
                             Build.MANUFACTURER.equalsIgnoreCase("gionee") ||

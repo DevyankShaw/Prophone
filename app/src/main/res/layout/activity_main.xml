@@ -7,6 +7,7 @@
     tools:context=".MainActivity">
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -20,7 +21,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="4"
             android:text="Activate Service"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:paddingLeft="10dp"/>
 
         <Switch
             android:id="@+id/swtService"
@@ -29,4 +31,17 @@
             android:layout_weight="1"
             android:paddingRight="20dp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtSetPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingLeft="10dp"
+        android:text="Set Password"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 </android.support.constraint.ConstraintLayout>

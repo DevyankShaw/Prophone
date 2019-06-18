@@ -9,6 +9,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -19,9 +20,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,10 +34,20 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
     private static final int IGNORE_BATTERY_OPTIMIZATION_REQUEST = 1002;
+
+    private TextView txtSetPassword;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        txtSetPassword = findViewById(R.id.txtSetPassword);
+        txtSetPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PasswordActivity.class));
+            }
+        });
 
         swtSwitch = findViewById(R.id.swtService);
 
