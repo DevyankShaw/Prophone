@@ -4,16 +4,31 @@ import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
+import android.widget.Toast;
 
+
+import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
+import static android.accounts.AccountManager.KEY_USERDATA;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static com.example.devyankshaw.checking.App.CHANNEL_ID;
+import static com.example.devyankshaw.checking.LockScreen.notificationPanel;
 
 
 public class LockService extends Service {
+
+    TelephonyManager telephonyManager;
+    PhoneStateListener listener;
+
+    private SharedPreferences settings;
 
     UserPresentBroadcastReceiver userPresentBroadcastReceiver = null;
     @Override
@@ -47,6 +62,34 @@ public class LockService extends Service {
             k1.disableKeyguard();
         }
 
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        // Create a new PhoneStateListener
+        listener = new PhoneStateListener() {
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                switch (state) {
+                    case TelephonyManager.CALL_STATE_IDLE:
+                        Toast.makeText(LockService.this, "Idle State", Toast.LENGTH_SHORT).show();
+                        notificationPanel = false;
+                        break;
+                    case TelephonyManager.CALL_STATE_OFFHOOK:
+                        Toast.makeText(LockService.this, "Off Hook State", Toast.LENGTH_SHORT).show();
+                        notificationPanel = true;
+                        break;
+                    case TelephonyManager.CALL_STATE_RINGING:
+                        Toast.makeText(LockService.this, "Ringing State", Toast.LENGTH_SHORT).show();
+                        notificationPanel = true;
+                        break;
+                }
+            }
+        };
+
+        // Register the listener with the telephony manager
+        telephonyManager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+
+
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
@@ -56,7 +99,7 @@ public class LockService extends Service {
                 .setContentTitle("Lock Service")
                 .setContentText("service running")
                 .setSmallIcon(R.drawable.ic_android)
-                .setContentIntent(pendingIntent)
+//                .setContentIntent(pendingIntent)
                 .build();
 
         startForeground(1, notification);//By putting this line the system will understand that it is not a normal background service which will get killed within 1 min rather it will remain after 1 min also until and unless i kill it

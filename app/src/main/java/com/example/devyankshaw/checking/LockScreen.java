@@ -2,14 +2,18 @@ package com.example.devyankshaw.checking;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -29,10 +33,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
 import static android.accounts.AccountManager.KEY_PASSWORD;
+import static android.accounts.AccountManager.KEY_USERDATA;
 
 public class LockScreen extends AppCompatActivity implements View.OnClickListener {
 
+    private SharedPreferences prefs;
 
     // To keep track of activity's window focus
     boolean currentFocus;
@@ -41,7 +48,9 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
     boolean isPaused;
 
     Handler collapseNotificationHandler;
+    Runnable runnable;
 
+    public static boolean notificationPanel;
     private Button btnSumbit;
     private EditText edtPassword;
     private ImageView imgClose;
@@ -57,6 +66,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
 //                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
+
 
         btnOne = findViewById(R.id.btnOne);
         btnTwo = findViewById(R.id.btnTwo);
@@ -96,9 +106,17 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         btnSumbit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LockScreen.this);
-                String password = prefs.getString(KEY_PASSWORD, "");
-                if(edtPassword.getText().toString().equals(password)) {
+                String pwd = edtPassword.getText().toString().trim();
+
+                if(pwd.isEmpty()){
+                    edtPassword.setError("Password required");
+                    edtPassword.requestFocus();
+                    return;
+                }
+
+                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreen.this);
+                int password = prefs.getInt(KEY_PASSWORD, 0000);
+                if(Integer.parseInt(edtPassword.getText().toString()) == password) {
                     if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
                             Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
                             Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
@@ -142,8 +160,8 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         mHomeWatcher.startWatch();
 
 
-
     }
+
 
 
     //Blocked back button pressed when the pin/password screen is active
@@ -183,11 +201,11 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
             if (!hasFocus) {//If activity/window lost it's focus i.e any system dialog appears etc then this if block executes
 
                 // Method that handles loss of window focus
-                collapseNow();
+                    collapseNow();
 
                 // Close every kind of system dialog
-                Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                sendBroadcast(closeDialog);//Sends signal/message  to the system
+//                Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+//                sendBroadcast(closeDialog);//Sends signal/message  to the system
 
 
             }
@@ -222,73 +240,72 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
 
     public void collapseNow() {
 
-        // Initialize 'collapseNotificationHandler'
-        if (collapseNotificationHandler == null) {
-            collapseNotificationHandler = new Handler();
-        }
 
-        // If window focus has been lost && activity is not in a paused state
-        // Its a valid check because showing of notification panel
-        // steals the focus from current activity's window, but does not
-        // 'pause' the activity
-        if (!currentFocus && !isPaused) {
+            // Initialize 'collapseNotificationHandler'
+            if (collapseNotificationHandler == null) {
+                collapseNotificationHandler = new Handler();
+            }
 
-            // Post a Runnable with some delay - currently set to 300 ms
-            collapseNotificationHandler.postDelayed(new Runnable() {
+            // If window focus has been lost && activity is not in a paused state
+            // Its a valid check because showing of notification panel
+            // steals the focus from current activity's window, but does not
+            // 'pause' the activity
+            if (!currentFocus && !isPaused) {
 
-                @Override
-                public void run() {
 
-                    // Use reflection to trigger a method from 'StatusBarManager'
+                // Post a Runnable with some delay - currently set to 300 ms
+                collapseNotificationHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Use reflection to trigger a method from 'StatusBarManager'
 
-                    Object statusBarService = getSystemService("statusbar");
-                    Class<?> statusBarManager = null;
+                        Object statusBarService = getSystemService("statusbar");
+                        Class<?> statusBarManager = null;
 
-                    try {
-                        statusBarManager = Class.forName("android.app.StatusBarManager");
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                    Method collapseStatusBar = null;
-
-                    try {
-
-                        // Prior to API 17, the method to call is 'collapse()'
-                        // API 17 onwards, the method to call is `collapsePanels()`
-
-                        if (Build.VERSION.SDK_INT > 16) {
-                            collapseStatusBar = statusBarManager .getMethod("collapsePanels");
-                        } else {
-                            collapseStatusBar = statusBarManager .getMethod("collapse");
+                        try {
+                            statusBarManager = Class.forName("android.app.StatusBarManager");
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
                         }
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
+
+                        Method collapseStatusBar = null;
+
+                        try {
+
+                            // Prior to API 17, the method to call is 'collapse()'
+                            // API 17 onwards, the method to call is `collapsePanels()`
+
+                            if (Build.VERSION.SDK_INT > 16) {
+                                collapseStatusBar = statusBarManager.getMethod("collapsePanels");
+                            } else {
+                                collapseStatusBar = statusBarManager.getMethod("collapse");
+                            }
+                        } catch (NoSuchMethodException e) {
+                            e.printStackTrace();
+                        }
+
+                        collapseStatusBar.setAccessible(true);
+
+                        try {
+                            collapseStatusBar.invoke(statusBarService);
+                        } catch (IllegalArgumentException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+
+                        // Check if the window focus has been returned
+                        // If it hasn't been returned, post this Runnable again
+                        // Currently, the delay is 100 ms. You can change this
+                        // value to suit your needs.
+                        if (!currentFocus && !isPaused && !notificationPanel) {
+                            collapseNotificationHandler.postDelayed(this, 100L);
+                        }
                     }
-
-                    collapseStatusBar.setAccessible(true);
-
-                    try {
-                        collapseStatusBar.invoke(statusBarService);
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Check if the window focus has been returned
-                    // If it hasn't been returned, post this Runnable again
-                    // Currently, the delay is 100 ms. You can change this
-                    // value to suit your needs.
-                    if (!currentFocus && !isPaused) {
-                        collapseNotificationHandler.postDelayed(this, 100L);
-                    }
-
-                }
-            }, 300L);
-        }
+                }, 300L);
+            }
     }
 
 

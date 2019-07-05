@@ -16,9 +16,9 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
         /*Sent when the user is present after
          * device wakes up (e.g when the keyguard is gone)
          * */
-        if(Intent.ACTION_USER_PRESENT.equals(intent.getAction())){
-            Toast.makeText(context, "User Present", Toast.LENGTH_LONG).show();
-        }
+//        if(Intent.ACTION_USER_PRESENT.equals(intent.getAction())){
+//            Toast.makeText(context, "User Present", Toast.LENGTH_LONG).show();
+//        }
         /*Device is shutting down. This is broadcast when the device
          * is being shut down (completely turned off, not sleeping)
          * */
