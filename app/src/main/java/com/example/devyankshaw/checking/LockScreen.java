@@ -204,8 +204,8 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
                     collapseNow();
 
                 // Close every kind of system dialog
-//                Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-//                sendBroadcast(closeDialog);//Sends signal/message  to the system
+                Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                sendBroadcast(closeDialog);//Sends signal/message  to the system
 
 
             }

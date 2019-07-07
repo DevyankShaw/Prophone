@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import java.util.concurrent.locks.Lock;
 
+import static com.example.devyankshaw.checking.PasswordActivity.passwordLockStatus;
+import static com.example.devyankshaw.checking.PatternLock.patternLockStatus;
+
 public class UserPresentBroadcastReceiver extends BroadcastReceiver {
 
     @Override
@@ -31,10 +34,18 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
 //        }
 
         if(Intent.ACTION_SCREEN_ON.equals(intent.getAction())){
-            Intent intentone = new Intent(context, LockScreen.class);
-            intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_RECEIVER_FOREGROUND);
-            context.startActivity(intentone);
+            if(passwordLockStatus) {
+                Intent intentone = new Intent(context, LockScreen.class);
+                intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_RECEIVER_FOREGROUND);
+                context.startActivity(intentone);
 //            Toast.makeText(context, "Action Screen On", Toast.LENGTH_LONG).show();
+//                patternLockStatus = false;
+            }else if(patternLockStatus){
+                Intent intentone = new Intent(context, LockScreenPattern.class);
+                intentone.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_RECEIVER_FOREGROUND);
+                context.startActivity(intentone);
+//                passwordLockStatus = false;
+            }
         }
     }
 }

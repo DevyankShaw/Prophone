@@ -70,15 +70,12 @@ public class LockService extends Service {
             public void onCallStateChanged(int state, String incomingNumber) {
                 switch (state) {
                     case TelephonyManager.CALL_STATE_IDLE:
-                        Toast.makeText(LockService.this, "Idle State", Toast.LENGTH_SHORT).show();
                         notificationPanel = false;
                         break;
                     case TelephonyManager.CALL_STATE_OFFHOOK:
-                        Toast.makeText(LockService.this, "Off Hook State", Toast.LENGTH_SHORT).show();
                         notificationPanel = true;
                         break;
                     case TelephonyManager.CALL_STATE_RINGING:
-                        Toast.makeText(LockService.this, "Ringing State", Toast.LENGTH_SHORT).show();
                         notificationPanel = true;
                         break;
                 }

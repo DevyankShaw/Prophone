@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import static android.accounts.AccountManager.KEY_PASSWORD;
 
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public final static int REQUEST_CODE = 123;
 
     private TextView txtSetPassword;
+    private TextView txtSetPattern;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
         txtSetPassword = findViewById(R.id.txtSetPassword);
+        txtSetPattern = findViewById(R.id.txtSetPattern);
         swtSwitch = findViewById(R.id.swtService);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
@@ -48,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
-            txtSetPassword.setText("Change Password");
+            //txtSetPassword.setText("Change Password");
             txtSetPassword.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -56,7 +59,16 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+
+            txtSetPattern.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, PatternLock.class));
+                }
+            });
+
         }
+
 
         final Handler handler = new Handler();
         Runnable checkOverlaySetting = new Runnable() {
@@ -156,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                             editorLock.putInt("switchFirst", 101);
                             editorLock.commit();
 
-                            txtSetPassword.setText("Change Password");
+
                             settings.edit().putBoolean("my_first_time", false).commit();
                     }
                     else if(settings.getInt("switchFirst", 0) == 101){
@@ -165,6 +177,17 @@ public class MainActivity extends AppCompatActivity {
                         ContextCompat.startForegroundService(MainActivity.this, intent.setAction(Intent.ACTION_SCREEN_OFF));
                     }
 
+                    /*preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                    String passwordPattern = preferences.getString(KEY_PASSWORD, "");
+                    int passwordPin = preferences.getInt(KEY_PASSWORD, 0000);
+                    if(passwordPattern.equals("") && passwordPin == 0000){
+                        swtSwitch.setChecked(false);
+                        Toast.makeText(MainActivity.this, "Please first either set password or pattern", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Intent intent = new Intent(MainActivity.this, LockService.class);
+                        //intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+                        ContextCompat.startForegroundService(MainActivity.this, intent.setAction(Intent.ACTION_SCREEN_OFF));
+                    }*/
                 }else {
                     stopService(new Intent(MainActivity.this,LockService.class));
                 }

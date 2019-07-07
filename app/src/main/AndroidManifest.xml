@@ -21,7 +21,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PasswordActivity"></activity>
+        <activity android:name=".LockScreenPattern"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".PatternLock" />
+        <activity android:name=".PasswordActivity" />
         <activity
             android:name=".LockScreen"
             android:screenOrientation="portrait" />
@@ -36,8 +39,6 @@
         <service
             android:name=".LockService"
             android:exported="false" />
-
-
     </application>
 
 </manifest>
