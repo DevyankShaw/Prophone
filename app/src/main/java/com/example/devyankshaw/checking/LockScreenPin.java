@@ -2,26 +2,20 @@ package com.example.devyankshaw.checking;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
@@ -33,11 +27,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
 import static android.accounts.AccountManager.KEY_PASSWORD;
-import static android.accounts.AccountManager.KEY_USERDATA;
 
-public class LockScreen extends AppCompatActivity implements View.OnClickListener {
+public class LockScreenPin extends AppCompatActivity implements View.OnClickListener {
 
     private SharedPreferences prefs;
 
@@ -52,7 +44,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
 
     public static boolean notificationPanel;
     private Button btnSumbit;
-    private EditText edtPassword;
+    private EditText edtPin;
     private ImageView imgClose;
     private Button btnOne, btnTwo, btnThree, btnFour, btnFive, btnSix, btnSeven, btnEight, btnNine, btnZero;
 
@@ -65,7 +57,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_FULLSCREEN|
 //                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lock_screen);
+        setContentView(R.layout.activity_lock_screen_pin);
 
 
         btnOne = findViewById(R.id.btnOne);
@@ -79,7 +71,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         btnNine = findViewById(R.id.btnNine);
         btnZero = findViewById(R.id.btnZero);
 
-        edtPassword = findViewById(R.id.edtPassword);
+        edtPin = findViewById(R.id.edtPin);
 
         btnOne.setOnClickListener(this);
         btnTwo.setOnClickListener(this);
@@ -98,7 +90,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                edtPassword.getText().clear();
+                edtPin.getText().clear();
             }
         });
 
@@ -106,17 +98,17 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
         btnSumbit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String pwd = edtPassword.getText().toString().trim();
+                String pwd = edtPin.getText().toString().trim();
 
                 if(pwd.isEmpty()){
-                    edtPassword.setError("Password required");
-                    edtPassword.requestFocus();
+                    edtPin.setError("Pin required");
+                    edtPin.requestFocus();
                     return;
                 }
 
-                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreen.this);
-                int password = prefs.getInt(KEY_PASSWORD, 0000);
-                if(Integer.parseInt(edtPassword.getText().toString()) == password) {
+                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreenPin.this);
+                int pin = prefs.getInt(KEY_PASSWORD, 0000);
+                if(Integer.parseInt(edtPin.getText().toString()) == pin) {
                     if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
                             Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
                             Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
@@ -127,7 +119,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
                         finish();
                     }
                 }else{
-                    Toast.makeText(LockScreen.this, "Wrong Password!!!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LockScreenPin.this, "Wrong Pin!!!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -138,10 +130,10 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
             @Override
             public void onHomePressed() {
                 // do something here...
-//                Toast.makeText(LockScreen.this, "Home Button Pressed", Toast.LENGTH_LONG).show();
-                Intent notificationIntent = new Intent(LockScreen.this, LockScreen.class);
+//                Toast.makeText(LockScreenPin.this, "Home Button Pressed", Toast.LENGTH_LONG).show();
+                Intent notificationIntent = new Intent(LockScreenPin.this, LockScreenPin.class);
                 notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(LockScreen.this, 0, notificationIntent, 0);
+                PendingIntent pendingIntent = PendingIntent.getActivity(LockScreenPin.this, 0, notificationIntent, 0);
                 try
                 {
                     pendingIntent.send();
@@ -153,7 +145,7 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
             }
             @Override
             public void onHomeLongPressed() {
-//                Toast.makeText(LockScreen.this, "Home Button Long Pressed", Toast.LENGTH_LONG).show();
+//                Toast.makeText(LockScreenPin.this, "Home Button Long Pressed", Toast.LENGTH_LONG).show();
 
             }
         });
@@ -313,34 +305,34 @@ public class LockScreen extends AppCompatActivity implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btnOne:
-                edtPassword.append("1");
+                edtPin.append("1");
                 break;
             case R.id.btnTwo:
-                edtPassword.append("2");
+                edtPin.append("2");
                 break;
             case R.id.btnThree:
-                edtPassword.append("3");
+                edtPin.append("3");
                 break;
             case R.id.btnFour:
-                edtPassword.append("4");
+                edtPin.append("4");
                 break;
             case R.id.btnFive:
-                edtPassword.append("5");
+                edtPin.append("5");
                 break;
             case R.id.btnSix:
-                edtPassword.append("6");
+                edtPin.append("6");
                 break;
             case R.id.btnSeven:
-                edtPassword.append("7");
+                edtPin.append("7");
                 break;
             case R.id.btnEight:
-                edtPassword.append("8");
+                edtPin.append("8");
                 break;
             case R.id.btnNine:
-                edtPassword.append("9");
+                edtPin.append("9");
                 break;
             case R.id.btnZero:
-                edtPassword.append("0");
+                edtPin.append("0");
                 break;
 
         }

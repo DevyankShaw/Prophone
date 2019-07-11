@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LockScreen">
+    tools:context=".LockScreenPin">
 
 
     <DigitalClock
@@ -20,18 +20,20 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="307dp"
-        android:layout_height="46dp"
+        android:layout_width="318dp"
+        android:layout_height="52dp"
         android:layout_marginStart="53dp"
         android:layout_marginEnd="51dp"
         android:layout_marginBottom="14dp"
+        android:background="@drawable/password_border"
         android:orientation="horizontal"
+        android:padding="3dp"
         app:layout_constraintBottom_toTopOf="@+id/gridLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <EditText
-            android:id="@+id/edtPassword"
+            android:id="@+id/edtPin"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="8"
@@ -55,6 +57,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="22dp"
+        android:background="@drawable/password_border"
+        android:padding="5dp"
         app:columnCount="3"
         app:layout_constraintBottom_toTopOf="@+id/btnSubmit"
         app:layout_constraintEnd_toEndOf="parent"
@@ -160,7 +164,9 @@
         android:layout_width="194dp"
         android:layout_height="56dp"
         android:layout_marginBottom="86dp"
-        android:text="SUBMIT"
+        android:background="@drawable/password_border"
+        android:text="Submit"
+        android:textAllCaps="false"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

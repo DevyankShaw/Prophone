@@ -9,18 +9,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.widget.Toast;
 
 
-import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
-import static android.accounts.AccountManager.KEY_USERDATA;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static com.example.devyankshaw.checking.App.CHANNEL_ID;
-import static com.example.devyankshaw.checking.LockScreen.notificationPanel;
+import static com.example.devyankshaw.checking.LockScreenPin.notificationPanel;
 
 
 public class LockService extends Service {

@@ -20,14 +20,24 @@
         android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:hardwareAccelerated ="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LockScreenPattern"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".PatternLock" />
-        <activity android:name=".PasswordActivity" />
+        <activity android:name=".LockScreenPassword"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity android:name=".PasswordActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".AddSecurityActivity" />
         <activity
-            android:name=".LockScreen"
-            android:screenOrientation="portrait" />
+            android:name=".LockScreenPattern"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
+        <activity android:name=".PatternActivity" />
+        <activity android:name=".PinActivity" />
+        <activity
+            android:name=".LockScreenPin"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppFullScreenTheme" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

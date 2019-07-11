@@ -19,12 +19,9 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import static android.accounts.AccountManager.KEY_PASSWORD;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private SharedPreferences preferences;
     private Switch swtSwitch;
@@ -32,17 +29,17 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
 
-    private TextView txtSetPassword;
-    private TextView txtSetPattern;
+    private TextView txtSecurity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        txtSecurity = findViewById(R.id.txtSecurity);
+
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
-        txtSetPassword = findViewById(R.id.txtSetPassword);
-        txtSetPattern = findViewById(R.id.txtSetPattern);
         swtSwitch = findViewById(R.id.swtService);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
@@ -51,25 +48,19 @@ public class MainActivity extends AppCompatActivity {
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
-            //txtSetPassword.setText("Change Password");
-            txtSetPassword.setOnClickListener(new View.OnClickListener() {
+            txtSecurity.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, PasswordActivity.class));
-
+                    startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
                 }
             });
 
-            txtSetPattern.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, PatternLock.class));
-                }
-            });
+
 
         }
 
 
+        //Opens the MainActivity as soon as the user gives the overlay permission
         final Handler handler = new Handler();
         Runnable checkOverlaySetting = new Runnable() {
             @Override
@@ -162,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 if(isChecked){
                     //This if is executed when the app is opened for the first time
                     if (settings.getBoolean("my_first_time", true)) {
-                        startActivity(new Intent(MainActivity.this, PasswordActivity.class));
+                        startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
 
                             SharedPreferences.Editor editorLock = settings.edit();
                             editorLock.putInt("switchFirst", 101);
@@ -177,17 +168,6 @@ public class MainActivity extends AppCompatActivity {
                         ContextCompat.startForegroundService(MainActivity.this, intent.setAction(Intent.ACTION_SCREEN_OFF));
                     }
 
-                    /*preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                    String passwordPattern = preferences.getString(KEY_PASSWORD, "");
-                    int passwordPin = preferences.getInt(KEY_PASSWORD, 0000);
-                    if(passwordPattern.equals("") && passwordPin == 0000){
-                        swtSwitch.setChecked(false);
-                        Toast.makeText(MainActivity.this, "Please first either set password or pattern", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Intent intent = new Intent(MainActivity.this, LockService.class);
-                        //intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-                        ContextCompat.startForegroundService(MainActivity.this, intent.setAction(Intent.ACTION_SCREEN_OFF));
-                    }*/
                 }else {
                     stopService(new Intent(MainActivity.this,LockService.class));
                 }
@@ -224,7 +204,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
 }

@@ -6,4 +6,5 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="mine_shaft">#303030</color>
+    <color name="blue_grey">#607d8b</color>
 </resources>
