@@ -5,11 +5,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,10 +29,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import static android.accounts.AccountManager.KEY_PASSWORD;
+import static com.example.devyankshaw.checking.MainActivity.PREFS_NAME;
 
 public class LockScreenPin extends AppCompatActivity implements View.OnClickListener {
 
-    private SharedPreferences prefs;
+    private SharedPreferences prefs, preferences;
+    private boolean switchAlarmTapped;
+
+    private int  pinWrongStatus;
+    private MediaPlayer mp;
 
     // To keep track of activity's window focus
     boolean currentFocus;
@@ -58,6 +64,10 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 //                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pin);
+
+        mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
+        preferences = getSharedPreferences(PREFS_NAME, 0);
+        switchAlarmTapped = preferences.getBoolean("ENABLE_ALARM", false);
 
 
         btnOne = findViewById(R.id.btnOne);
@@ -118,8 +128,24 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                     } else {
                         finish();
                     }
+
+                    if(switchAlarmTapped) {
+                        pinWrongStatus = 0;
+                        if (mp.isPlaying()) {
+                            mp.stop();
+                        }
+                    }
                 }else{
                     Toast.makeText(LockScreenPin.this, "Wrong Pin!!!", Toast.LENGTH_SHORT).show();
+
+                    if(switchAlarmTapped) {
+                        pinWrongStatus++;
+                        if (pinWrongStatus == 3) {
+                            Toast.makeText(LockScreenPin.this, "You exceeded maximum attempt\n  \t\tPlease enter correct pin", Toast.LENGTH_LONG).show();
+                            mp.setLooping(true);
+                            mp.start();
+                        }
+                    }
                 }
             }
         });

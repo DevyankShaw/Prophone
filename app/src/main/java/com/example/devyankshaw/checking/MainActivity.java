@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -24,7 +24,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity{
 
     private SharedPreferences preferences;
-    private Switch swtSwitch;
+    private Switch swtSwitch, swtAlarm;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
@@ -41,10 +41,14 @@ public class MainActivity extends AppCompatActivity{
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
         swtSwitch = findViewById(R.id.swtService);
+        swtAlarm = findViewById(R.id.swtAlarm);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
         boolean lockValue = settings.getBoolean("switchKeyLock", false);
         swtSwitch.setChecked(lockValue);
+
+        boolean alarmValue = settings.getBoolean("SWITCH_ALARM", false);
+        swtAlarm.setChecked(alarmValue);
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
@@ -54,9 +58,6 @@ public class MainActivity extends AppCompatActivity{
                     startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
                 }
             });
-
-
-
         }
 
 
@@ -175,6 +176,19 @@ public class MainActivity extends AppCompatActivity{
                     SharedPreferences.Editor editorLock = settings.edit();
                     editorLock.putBoolean("switchKeyLock", isChecked);
                     editorLock.commit();
+            }
+        });
+
+        swtAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    settings.edit().putBoolean("ENABLE_ALARM", true).commit();
+                }else{
+                    settings.edit().putBoolean("ENABLE_ALARM", false).commit();
+                }
+                //Saving the state of the alarm switch
+                settings.edit().putBoolean("SWITCH_ALARM", isChecked).commit();
             }
         });
     }
