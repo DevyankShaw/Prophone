@@ -17,10 +17,10 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
 import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -136,12 +136,12 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                         }
                     }
                 }else{
-                    Toast.makeText(LockScreenPin.this, "Wrong Pin!!!", Toast.LENGTH_SHORT).show();
+                    FancyToast.makeText(LockScreenPin.this, "Wrong Pin!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
 
                     if(switchAlarmTapped) {
                         pinWrongStatus++;
                         if (pinWrongStatus == 3) {
-                            Toast.makeText(LockScreenPin.this, "You exceeded maximum attempt\n  \t\tPlease enter correct pin", Toast.LENGTH_LONG).show();
+                            FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct pin", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
                             mp.setLooping(true);
                             mp.start();
                         }

@@ -29,4 +29,5 @@ dependencies {
 
     implementation 'com.android.support:gridlayout-v7:28.0.0'
     implementation 'com.andrognito.patternlockview:patternlockview:1.0.0'
+    implementation 'com.github.Shashank02051997:FancyToast-Android:0.1.6'
 }

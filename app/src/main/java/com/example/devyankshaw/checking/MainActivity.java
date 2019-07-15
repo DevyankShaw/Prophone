@@ -24,7 +24,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity{
 
     private SharedPreferences preferences;
-    private Switch swtSwitch, swtAlarm;
+    private Switch swtSwitch, swtAlarm, swtAutoStart;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity{
 
         swtSwitch = findViewById(R.id.swtService);
         swtAlarm = findViewById(R.id.swtAlarm);
+        swtAutoStart = findViewById(R.id.swtAutoStart);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
         boolean lockValue = settings.getBoolean("switchKeyLock", false);
@@ -49,6 +50,9 @@ public class MainActivity extends AppCompatActivity{
 
         boolean alarmValue = settings.getBoolean("SWITCH_ALARM", false);
         swtAlarm.setChecked(alarmValue);
+
+        boolean autoStartValue = settings.getBoolean("SWITCH_START", false);
+        swtAutoStart.setChecked(autoStartValue);
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity{
                     startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
                 }
             });
+
         }
 
 
@@ -191,6 +196,20 @@ public class MainActivity extends AppCompatActivity{
                 settings.edit().putBoolean("SWITCH_ALARM", isChecked).commit();
             }
         });
+
+        swtAutoStart.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    settings.edit().putBoolean("AUTO_START", true).commit();
+                }else{
+                    settings.edit().putBoolean("AUTO_START", false).commit();
+                }
+                //Saving the state of the alarm switch
+                settings.edit().putBoolean("SWITCH_START", isChecked).commit();
+            }
+        });
+
     }
 
 
