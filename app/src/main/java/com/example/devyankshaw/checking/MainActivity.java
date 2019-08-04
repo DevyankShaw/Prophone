@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity{
 
-    private SharedPreferences preferences;
+    private SharedPreferences preferences, prefsForDevices;
     private Switch swtSwitch, swtAlarm, swtAutoStart;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity{
         txtSecurity = findViewById(R.id.txtSecurity);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        prefsForDevices = PreferenceManager.getDefaultSharedPreferences(this);
 
         swtSwitch = findViewById(R.id.swtService);
         swtAlarm = findViewById(R.id.swtAlarm);
@@ -106,46 +107,64 @@ public class MainActivity extends AppCompatActivity{
         //For XIAOMI devices
         if(Build.BRAND.equalsIgnoreCase("xiaomi") ) {
 
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-            startActivity(intent);
-            return;
+            if(!prefsForDevices.getBoolean("oneTimeDeviceXiaomi", false)) {
+                // run your one time code
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+                startActivity(intent);
+
+                SharedPreferences.Editor editor = prefsForDevices.edit();
+                editor.putBoolean("oneTimeDeviceXiaomi", true);
+                editor.commit();
+            }
         }
 
 
         //For OPPO devices
         if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
-            try {
-                Intent intent = new Intent();
-                intent.setClassName("com.coloros.safecenter",
-                        "com.coloros.safecenter.permission.startup.StartupAppListActivity");
-                startActivity(intent);
-            } catch (Exception e) {
+
+            if(!prefsForDevices.getBoolean("oneTimeDeviceOppo", false)) {
+                // run your one time code
                 try {
                     Intent intent = new Intent();
-                    intent.setClassName("com.oppo.safe",
-                            "com.oppo.safe.permission.startup.StartupAppListActivity");
+                    intent.setClassName("com.coloros.safecenter",
+                            "com.coloros.safecenter.permission.startup.StartupAppListActivity");
                     startActivity(intent);
-
-                } catch (Exception ex) {
+                } catch (Exception e) {
                     try {
                         Intent intent = new Intent();
-                        intent.setClassName("com.coloros.safecenter",
-                                "com.coloros.safecenter.startupapp.StartupAppListActivity");
+                        intent.setClassName("com.oppo.safe",
+                                "com.oppo.safe.permission.startup.StartupAppListActivity");
                         startActivity(intent);
-                    } catch (Exception exx) {
 
+                    } catch (Exception ex) {
+                        try {
+                            Intent intent = new Intent();
+                            intent.setClassName("com.coloros.safecenter",
+                                    "com.coloros.safecenter.startupapp.StartupAppListActivity");
+                            startActivity(intent);
+                        } catch (Exception exx) {
+
+                        }
                     }
                 }
+
+                SharedPreferences.Editor editor = prefsForDevices.edit();
+                editor.putBoolean("oneTimeDeviceOppo", true);
+                editor.commit();
             }
-            return;
         }
 
 
-        //For VIVO devices
+        //AutoStart permission for VIVO devices
         if(Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-            autoLaunchVivo(MainActivity.this);
-            return;
+            if(!prefsForDevices.getBoolean("oneTimeDeviceVivo", false)) {
+                // run your one time code
+                autoLaunchVivo(MainActivity.this);
+                SharedPreferences.Editor editor = prefsForDevices.edit();
+                editor.putBoolean("oneTimeDeviceVivo", true);
+                editor.commit();
+            }
         }
 
 

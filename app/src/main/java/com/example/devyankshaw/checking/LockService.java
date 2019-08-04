@@ -7,12 +7,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static com.example.devyankshaw.checking.App.CHANNEL_ID;
@@ -24,17 +22,15 @@ public class LockService extends Service {
     TelephonyManager telephonyManager;
     PhoneStateListener listener;
 
-    private SharedPreferences settings;
-
     UserPresentBroadcastReceiver userPresentBroadcastReceiver = null;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
-    {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         //Registering Broadcast Receiver
         userPresentBroadcastReceiver = new UserPresentBroadcastReceiver();
         IntentFilter filter1 = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -43,18 +39,17 @@ public class LockService extends Service {
         registerReceiver(userPresentBroadcastReceiver, filter1);
 
 
-        if(intent == null || intent.getAction() == null) {
+        if (intent == null || intent.getAction() == null) {
             //Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
             return START_STICKY;
         }
 
         String action = intent.getAction();
         //Disabling the slide to unlock event
-        if(action.equals(ACTION_SCREEN_OFF))
-        {
+        if (action.equals(ACTION_SCREEN_OFF)) {
             KeyguardManager.KeyguardLock k1;
-            KeyguardManager km =(KeyguardManager)getSystemService(KEYGUARD_SERVICE);
-            k1= km.newKeyguardLock("IN");
+            KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            k1 = km.newKeyguardLock("IN");
             k1.disableKeyguard();
         }
 
@@ -82,7 +77,6 @@ public class LockService extends Service {
         telephonyManager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
 
 
-
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
@@ -98,16 +92,16 @@ public class LockService extends Service {
         startForeground(1, notification);//By putting this line the system will understand that it is not a normal background service which will get killed within 1 min rather it will remain after 1 min also until and unless i kill it
 
 
-
-
         return START_STICKY;
     }
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(userPresentBroadcastReceiver != null) {
+        if (userPresentBroadcastReceiver != null) {
             unregisterReceiver(userPresentBroadcastReceiver);
         }
     }
+
 }
