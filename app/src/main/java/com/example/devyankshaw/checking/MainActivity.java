@@ -4,8 +4,12 @@ package com.example.devyankshaw.checking;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -30,6 +35,13 @@ public class MainActivity extends AppCompatActivity{
     public final static int REQUEST_CODE = 123;
 
     private TextView txtSecurity;
+
+    //Check GPS Status true/false
+    public static boolean checkGPSStatus(Context context){
+        LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE );
+        boolean statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        return statusOfGPS;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +76,22 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
 
+        }
+
+        //Dialog for network and GPS is not available
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("Network and GPS Alert!!!");
+        alertDialog.setMessage("Internet Connection and GPS is disabled in your device. Kindly enable it.");
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialog.create();
+
+        if(!(isNetworkAvailable() && checkGPSStatus(this))){
+            alertDialog.show();
         }
 
 
@@ -168,6 +196,14 @@ public class MainActivity extends AppCompatActivity{
         }
 
 
+    }
+
+    //Check Internet Connection Status true/false
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     private void floatTheViewOnTheScreen() {

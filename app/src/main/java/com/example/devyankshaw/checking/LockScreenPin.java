@@ -33,6 +33,7 @@ import static com.example.devyankshaw.checking.MainActivity.PREFS_NAME;
 
 public class LockScreenPin extends AppCompatActivity implements View.OnClickListener {
 
+
     private SharedPreferences prefs, preferences;
     private boolean switchAlarmTapped;
 
@@ -64,6 +65,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 //                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pin);
+
 
         mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
         preferences = getSharedPreferences(PREFS_NAME, 0);
@@ -230,6 +232,12 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
 
         }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
     @Override
     protected void onPause() {
