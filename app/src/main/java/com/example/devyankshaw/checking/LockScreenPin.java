@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -50,6 +51,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     Runnable runnable;
 
     public static boolean notificationPanel;
+    public ConstraintLayout layoutPin;
     private Button btnSumbit;
     private EditText edtPin;
     private ImageView imgClose;
@@ -66,6 +68,14 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pin);
 
+        layoutPin = findViewById(R.id.layoutPin);
+
+        //Displaying the wallpaper image that is set by the user
+        SharedPreferences preferences = getSharedPreferences("WallpaperImage",MODE_PRIVATE);
+        int imageReference = preferences.getInt("imageReference", 0);
+        if(preferences.getBoolean("isImage",false)==true){
+            layoutPin.setBackgroundResource(imageReference);
+        }
 
         mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
         preferences = getSharedPreferences(PREFS_NAME, 0);

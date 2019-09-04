@@ -26,7 +26,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences preferences, prefsForDevices;
     private Switch swtSwitch, swtAlarm, swtAutoStart;
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity{
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
 
-    private TextView txtSecurity;
+    private TextView txtSecurity, txtWallpaper;
 
     //Check GPS Status true/false
     public static boolean checkGPSStatus(Context context){
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         txtSecurity = findViewById(R.id.txtSecurity);
+        txtWallpaper = findViewById(R.id.txtWallpaper);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         prefsForDevices = PreferenceManager.getDefaultSharedPreferences(this);
@@ -73,6 +74,13 @@ public class MainActivity extends AppCompatActivity{
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
+                }
+            });
+
+            txtWallpaper.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, Wallpaper.class));
                 }
             });
 

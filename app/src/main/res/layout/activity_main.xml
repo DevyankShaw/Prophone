@@ -17,38 +17,35 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <Switch
+                android:id="@+id/swtService"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
             <TextView
+                style="@style/sectionHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
-                style="@style/sectionHeader"
                 android:paddingLeft="4dp"
                 android:text="Activate Service"
-                android:textSize="22sp"
-                android:textAppearance="@style/TextAppearance.AppCompat"/>
-
-            <Switch
-                android:id="@+id/swtService"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                style="@style/sectionHeader"/>
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="22sp" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/txtSecurity"
-            style="@style/sectionHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="4dp"
-            android:text="Security &amp; Password"
-            android:textSize="22sp"
-            android:textAppearance="@style/TextAppearance.AppCompat"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
+            <Switch
+                android:id="@+id/swtAlarm"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <TextView
                 style="@style/sectionHeader"
@@ -58,20 +55,20 @@
                 android:paddingLeft="4dp"
                 android:text="Enable Alarm"
                 android:textAppearance="@style/TextAppearance.AppCompat"
-                android:textSize="22sp"/>
-
-            <Switch
-                android:id="@+id/swtAlarm"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
+                android:textSize="22sp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
+            <Switch
+                android:id="@+id/swtAutoStart"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <TextView
                 style="@style/sectionHeader"
@@ -81,15 +78,29 @@
                 android:paddingLeft="4dp"
                 android:text="Auto Start"
                 android:textAppearance="@style/TextAppearance.AppCompat"
-                android:textSize="22sp"/>
-
-            <Switch
-                android:id="@+id/swtAutoStart"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
+                android:textSize="22sp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtSecurity"
+            style="@style/sectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:text="Security &amp; Password"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/txtWallpaper"
+            style="@style/sectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:text="Change Wallpaper"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textSize="22sp" />
+
     </LinearLayout>
 
 </RelativeLayout>
