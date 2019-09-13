@@ -17,13 +17,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Switch
-                android:id="@+id/swtService"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
             <TextView
                 style="@style/sectionHeader"
                 android:layout_width="0dp"
@@ -33,19 +26,19 @@
                 android:text="Activate Service"
                 android:textAppearance="@style/TextAppearance.AppCompat"
                 android:textSize="22sp" />
+
+            <Switch
+                android:id="@+id/swtService"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/swtAlarm"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
 
             <TextView
                 style="@style/sectionHeader"
@@ -56,19 +49,19 @@
                 android:text="Enable Alarm"
                 android:textAppearance="@style/TextAppearance.AppCompat"
                 android:textSize="22sp" />
+
+            <Switch
+                android:id="@+id/swtAlarm"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/swtAutoStart"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
 
             <TextView
                 style="@style/sectionHeader"
@@ -79,6 +72,13 @@
                 android:text="Auto Start"
                 android:textAppearance="@style/TextAppearance.AppCompat"
                 android:textSize="22sp" />
+
+            <Switch
+                android:id="@+id/swtAutoStart"
+                style="@style/sectionHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
         </LinearLayout>
 
         <TextView
@@ -98,6 +98,16 @@
             android:layout_height="wrap_content"
             android:paddingLeft="4dp"
             android:text="Change Wallpaper"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/txtOneTapLock"
+            style="@style/sectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:text="One Tap Lock"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:textSize="22sp" />
 

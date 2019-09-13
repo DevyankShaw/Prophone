@@ -12,9 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".WallpaperChange"></activity>
+        <activity android:name=".OneTapLock.TapLock"></activity>
+        <activity android:name=".WallpaperChange.WallpaperChange" />
         <activity
-            android:name=".Wallpaper"
+            android:name=".WallpaperChange.Wallpaper"
             android:label="@string/title_activity_wallpaper"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -22,15 +23,15 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
         <activity
-            android:name=".PasswordActivity"
+            android:name=".SecurityPassword.PasswordActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".AddSecurityActivity" />
         <activity
             android:name=".LockScreenPattern"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" />
-        <activity android:name=".PatternActivity" />
-        <activity android:name=".PinActivity" />
+        <activity android:name=".SecurityPassword.PatternActivity" />
+        <activity android:name=".SecurityPassword.PinActivity" />
         <activity
             android:name=".LockScreenPin"
             android:screenOrientation="portrait"
@@ -41,6 +42,10 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
 
         <receiver
@@ -52,6 +57,18 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".OneTapLock.MyAdmin"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/policies" />
         </receiver>
 
         <service
@@ -70,7 +87,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
 
 </manifest>

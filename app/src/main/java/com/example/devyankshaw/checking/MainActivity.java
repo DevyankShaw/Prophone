@@ -25,6 +25,9 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.example.devyankshaw.checking.OneTapLock.TapLock;
+import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
 
-    private TextView txtSecurity, txtWallpaper;
+    private TextView txtSecurity, txtWallpaper,txtOneTapLock;
 
     //Check GPS Status true/false
     public static boolean checkGPSStatus(Context context){
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
         txtSecurity = findViewById(R.id.txtSecurity);
         txtWallpaper = findViewById(R.id.txtWallpaper);
+        txtOneTapLock = findViewById(R.id.txtOneTapLock);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         prefsForDevices = PreferenceManager.getDefaultSharedPreferences(this);
@@ -84,6 +88,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            txtOneTapLock.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, TapLock.class));
+                }
+            });
         }
 
         //Dialog for network and GPS is not available

@@ -1,10 +1,14 @@
 package com.example.devyankshaw.checking;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +16,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -35,7 +40,7 @@ import static com.example.devyankshaw.checking.MainActivity.PREFS_NAME;
 public class LockScreenPin extends AppCompatActivity implements View.OnClickListener {
 
 
-    private SharedPreferences prefs, preferences;
+    private SharedPreferences prefs, preferencesGlobal;
     private boolean switchAlarmTapped;
 
     private int  pinWrongStatus;
@@ -50,7 +55,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     Handler collapseNotificationHandler;
     Runnable runnable;
 
-    public static boolean notificationPanel;
+    private boolean notificationPanelPin;
     public ConstraintLayout layoutPin;
     private Button btnSumbit;
     private EditText edtPin;
@@ -59,12 +64,18 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
     private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_POWER));
 
+    // method for converting base64 to bitmap
+    public static Bitmap decodeBase64(String input) {
+        byte[] decodedByte = Base64.decode(input, 0);
+        return BitmapFactory
+                .decodeByteArray(decodedByte, 0, decodedByte.length);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_FULLSCREEN|
-//                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                |WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pin);
 
@@ -72,14 +83,20 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
         //Displaying the wallpaper image that is set by the user
         SharedPreferences preferences = getSharedPreferences("WallpaperImage",MODE_PRIVATE);
-        int imageReference = preferences.getInt("imageReference", 0);
-        if(preferences.getBoolean("isImage",false)==true){
+        if(preferences.getBoolean("isImage",false)==true && preferences.getBoolean("isImageChooser",false)==false){
+            int imageReference = preferences.getInt("imageReference", 0);
             layoutPin.setBackgroundResource(imageReference);
+        }
+        //Displaying the wallpaper image that is set by the user from the gallery
+        if(preferences.getBoolean("isImage",false)==false && preferences.getBoolean("isImageChooser",false)==true){
+            String imageChooser = preferences.getString("imageChooser","");
+            BitmapDrawable background = new BitmapDrawable(this.getResources(), decodeBase64(imageChooser));
+            layoutPin.setBackground(background);
         }
 
         mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
-        preferences = getSharedPreferences(PREFS_NAME, 0);
-        switchAlarmTapped = preferences.getBoolean("ENABLE_ALARM", false);
+        preferencesGlobal = getSharedPreferences(PREFS_NAME, 0);
+        switchAlarmTapped = preferencesGlobal.getBoolean("ENABLE_ALARM", false);
 
 
         btnOne = findViewById(R.id.btnOne);
@@ -295,7 +312,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                     public void run() {
                         // Use reflection to trigger a method from 'StatusBarManager'
 
-                        Object statusBarService = getSystemService("statusbar");
+                        @SuppressLint("WrongConstant") Object statusBarService = getSystemService("statusbar");
                         Class<?> statusBarManager = null;
 
                         try {
@@ -336,7 +353,8 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                         // If it hasn't been returned, post this Runnable again
                         // Currently, the delay is 100 ms. You can change this
                         // value to suit your needs.
-                        if (!currentFocus && !isPaused && !notificationPanel) {
+                        notificationPanelPin = preferencesGlobal.getBoolean("notificationPanel",false);
+                        if (!currentFocus && !isPaused && !notificationPanelPin) {
                             collapseNotificationHandler.postDelayed(this, 100L);
                         }
                     }

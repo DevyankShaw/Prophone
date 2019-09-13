@@ -8,4 +8,8 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_wallpaper">Wallpaper</string>
+
+    <string name="shortcut_long_label">One Tap Lock</string>
+    <string name="shortcut_disabled_message">Disabled Message</string>
+    <string name="shortcut_short_label">One Tap Lock</string>
 </resources>

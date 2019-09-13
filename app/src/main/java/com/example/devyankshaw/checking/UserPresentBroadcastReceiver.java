@@ -53,6 +53,7 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
             if(prefs.getBoolean("AUTO_START", false)) {
                 Intent i = new Intent(context, LockService.class);
                 ContextCompat.startForegroundService(context, i.setAction(Intent.ACTION_SCREEN_OFF));
+                prefs.edit().putBoolean("switchKeyLock", true).commit();
             }
         }
 

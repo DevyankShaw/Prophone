@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
@@ -14,10 +15,12 @@ import android.telephony.TelephonyManager;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static com.example.devyankshaw.checking.App.CHANNEL_ID;
-import static com.example.devyankshaw.checking.LockScreenPin.notificationPanel;
+import static com.example.devyankshaw.checking.MainActivity.PREFS_NAME;
 
 
 public class LockService extends Service {
+
+    private SharedPreferences preferences;
 
     TelephonyManager telephonyManager;
     PhoneStateListener listener;
@@ -54,20 +57,20 @@ public class LockService extends Service {
         }
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-
+        preferences = getSharedPreferences(PREFS_NAME, 0);
         // Create a new PhoneStateListener
         listener = new PhoneStateListener() {
             @Override
             public void onCallStateChanged(int state, String incomingNumber) {
                 switch (state) {
                     case TelephonyManager.CALL_STATE_IDLE:
-                        notificationPanel = false;
+                        preferences.edit().putBoolean("notificationPanel", false);
                         break;
                     case TelephonyManager.CALL_STATE_OFFHOOK:
-                        notificationPanel = true;
+                        preferences.edit().putBoolean("notificationPanel", true);
                         break;
                     case TelephonyManager.CALL_STATE_RINGING:
-                        notificationPanel = true;
+                        preferences.edit().putBoolean("notificationPanel", true);
                         break;
                 }
             }
