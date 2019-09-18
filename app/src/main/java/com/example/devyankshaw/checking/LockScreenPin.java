@@ -6,9 +6,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,17 +21,21 @@ import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
 import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -55,6 +63,9 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     Handler collapseNotificationHandler;
     Runnable runnable;
 
+    private SurfaceTexture surfaceTexture;
+    private Context mContext;
+
     private boolean notificationPanelPin;
     public ConstraintLayout layoutPin;
     private Button btnSumbit;
@@ -70,144 +81,32 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         return BitmapFactory
                 .decodeByteArray(decodedByte, 0, decodedByte.length);
     }
+    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            BitmapFactory.Options bfo = new BitmapFactory.Options();
+            bfo.inPreferredConfig = Bitmap.Config.RGB_565;
+            Matrix mat = new Matrix();
+            mat.postRotate(270);
+            Bitmap bmp = BitmapFactory.decodeStream(new ByteArrayInputStream(data), null, bfo);
+            Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(),
+                    bmp.getHeight(), mat, true);
+            ByteArrayOutputStream outstudentstreamOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100,
+                    outstudentstreamOutputStream);
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                |WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lock_screen_pin);
+            SharedPreferences sharedPreferences=getSharedPreferences("TAKE_SELFIE",MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("imageSelfie", encodeTobase64(bitmap));
+            editor.commit();
 
-        layoutPin = findViewById(R.id.layoutPin);
+            //Closing camera
+            camera.stopFaceDetection();
+            camera.stopPreview();
+            camera.release();
 
-        //Displaying the wallpaper image that is set by the user
-        SharedPreferences preferences = getSharedPreferences("WallpaperImage",MODE_PRIVATE);
-        if(preferences.getBoolean("isImage",false)==true && preferences.getBoolean("isImageChooser",false)==false){
-            int imageReference = preferences.getInt("imageReference", 0);
-            layoutPin.setBackgroundResource(imageReference);
         }
-        //Displaying the wallpaper image that is set by the user from the gallery
-        if(preferences.getBoolean("isImage",false)==false && preferences.getBoolean("isImageChooser",false)==true){
-            String imageChooser = preferences.getString("imageChooser","");
-            BitmapDrawable background = new BitmapDrawable(this.getResources(), decodeBase64(imageChooser));
-            layoutPin.setBackground(background);
-        }
-
-        mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
-        preferencesGlobal = getSharedPreferences(PREFS_NAME, 0);
-        switchAlarmTapped = preferencesGlobal.getBoolean("ENABLE_ALARM", false);
-
-
-        btnOne = findViewById(R.id.btnOne);
-        btnTwo = findViewById(R.id.btnTwo);
-        btnThree = findViewById(R.id.btnThree);
-        btnFour = findViewById(R.id.btnFour);
-        btnFive = findViewById(R.id.btnFive);
-        btnSix = findViewById(R.id.btnSix);
-        btnSeven = findViewById(R.id.btnSeven);
-        btnEight = findViewById(R.id.btnEight);
-        btnNine = findViewById(R.id.btnNine);
-        btnZero = findViewById(R.id.btnZero);
-
-        edtPin = findViewById(R.id.edtPin);
-
-        btnOne.setOnClickListener(this);
-        btnTwo.setOnClickListener(this);
-        btnThree.setOnClickListener(this);
-        btnFour.setOnClickListener(this);
-        btnFive.setOnClickListener(this);
-        btnSix.setOnClickListener(this);
-        btnSeven.setOnClickListener(this);
-        btnEight.setOnClickListener(this);
-        btnNine.setOnClickListener(this);
-        btnZero.setOnClickListener(this);
-
-
-
-        imgClose = findViewById(R.id.imgClose);
-        imgClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                edtPin.getText().clear();
-            }
-        });
-
-        btnSumbit = findViewById(R.id.btnSubmit);
-        btnSumbit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String pwd = edtPin.getText().toString().trim();
-
-                if(pwd.isEmpty()){
-                    edtPin.setError("Pin required");
-                    edtPin.requestFocus();
-                    return;
-                }
-
-                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreenPin.this);
-                int pin = prefs.getInt(KEY_PASSWORD, 0000);
-                if(Integer.parseInt(edtPin.getText().toString()) == pin) {
-                    if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("micromax") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-                        finishAffinity(); //kill other activities
-                    } else {
-                        finish();
-                    }
-
-                    if(switchAlarmTapped) {
-                        pinWrongStatus = 0;
-                        if (mp.isPlaying()) {
-                            mp.stop();
-                        }
-                    }
-                }else{
-                    FancyToast.makeText(LockScreenPin.this, "Wrong Pin!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
-
-                    if(switchAlarmTapped) {
-                        pinWrongStatus++;
-                        if (pinWrongStatus == 3) {
-                            FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct pin", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
-                            mp.setLooping(true);
-                            mp.start();
-                        }
-                    }
-                }
-            }
-        });
-
-        //Blocks Home Button Pressed
-        HomeWatcher mHomeWatcher = new HomeWatcher(this);
-        mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
-            @Override
-            public void onHomePressed() {
-                // do something here...
-//                Toast.makeText(LockScreenPin.this, "Home Button Pressed", Toast.LENGTH_LONG).show();
-                Intent notificationIntent = new Intent(LockScreenPin.this, LockScreenPin.class);
-                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(LockScreenPin.this, 0, notificationIntent, 0);
-                try
-                {
-                    pendingIntent.send();
-                }
-                catch (PendingIntent.CanceledException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-            @Override
-            public void onHomeLongPressed() {
-//                Toast.makeText(LockScreenPin.this, "Home Button Long Pressed", Toast.LENGTH_LONG).show();
-
-            }
-        });
-        mHomeWatcher.startWatch();
-
-
-    }
+    };
 
 
 
@@ -360,6 +259,212 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                     }
                 }, 300L);
             }
+    }
+
+    // method for converting bitmap to base64
+    public static String encodeTobase64(Bitmap image) {
+        Bitmap immage = image;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        immage.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] b = baos.toByteArray();
+        String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+
+        Log.d("Image Log:", imageEncoded);
+        return imageEncoded;
+    }
+
+    /* Check if this device has a camera */
+    private static Camera openFrontCamera(Context context) {
+        try {
+            boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+            if (hasCamera) {
+                int cameraCount = 0;
+                Camera cam = null;
+                Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                cameraCount = Camera.getNumberOfCameras();
+                for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
+                    Camera.getCameraInfo(camIdx, cameraInfo);
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        try {
+                            cam = Camera.open(camIdx);
+                        } catch (RuntimeException e) {
+                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+
+                return cam;
+            }
+        } catch (Exception ex) {
+            Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        return null;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                |WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lock_screen_pin);
+
+        mContext = getApplicationContext();
+        surfaceTexture = new SurfaceTexture(0);
+
+        layoutPin = findViewById(R.id.layoutPin);
+
+        //Displaying the wallpaper image that is set by the user
+        SharedPreferences preferences = getSharedPreferences("WallpaperImage",MODE_PRIVATE);
+        if(preferences.getBoolean("isImage",false)==true && preferences.getBoolean("isImageChooser",false)==false){
+            int imageReference = preferences.getInt("imageReference", 0);
+            layoutPin.setBackgroundResource(imageReference);
+        }
+        //Displaying the wallpaper image that is set by the user from the gallery
+        if(preferences.getBoolean("isImage",false)==false && preferences.getBoolean("isImageChooser",false)==true){
+            String imageChooser = preferences.getString("imageChooser","");
+            BitmapDrawable background = new BitmapDrawable(this.getResources(), decodeBase64(imageChooser));
+            layoutPin.setBackground(background);
+        }
+
+        mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
+        preferencesGlobal = getSharedPreferences(PREFS_NAME, 0);
+        switchAlarmTapped = preferencesGlobal.getBoolean("ENABLE_ALARM", false);
+
+
+        btnOne = findViewById(R.id.btnOne);
+        btnTwo = findViewById(R.id.btnTwo);
+        btnThree = findViewById(R.id.btnThree);
+        btnFour = findViewById(R.id.btnFour);
+        btnFive = findViewById(R.id.btnFive);
+        btnSix = findViewById(R.id.btnSix);
+        btnSeven = findViewById(R.id.btnSeven);
+        btnEight = findViewById(R.id.btnEight);
+        btnNine = findViewById(R.id.btnNine);
+        btnZero = findViewById(R.id.btnZero);
+
+        edtPin = findViewById(R.id.edtPin);
+
+        btnOne.setOnClickListener(this);
+        btnTwo.setOnClickListener(this);
+        btnThree.setOnClickListener(this);
+        btnFour.setOnClickListener(this);
+        btnFive.setOnClickListener(this);
+        btnSix.setOnClickListener(this);
+        btnSeven.setOnClickListener(this);
+        btnEight.setOnClickListener(this);
+        btnNine.setOnClickListener(this);
+        btnZero.setOnClickListener(this);
+
+
+
+        imgClose = findViewById(R.id.imgClose);
+        imgClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                edtPin.getText().clear();
+            }
+        });
+
+        btnSumbit = findViewById(R.id.btnSubmit);
+        btnSumbit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String pwd = edtPin.getText().toString().trim();
+
+                if(pwd.isEmpty()){
+                    edtPin.setError("Pin required");
+                    edtPin.requestFocus();
+                    return;
+                }
+
+                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreenPin.this);
+                int pin = prefs.getInt(KEY_PASSWORD, 0000);
+                if(Integer.parseInt(edtPin.getText().toString()) == pin) {
+                    if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("micromax") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+                        finishAffinity(); //kill other activities
+                    } else {
+                        finish();
+                    }
+
+                    if(switchAlarmTapped) {
+                        pinWrongStatus = 0;
+                        if (mp.isPlaying()) {
+                            mp.stop();
+                        }
+                    }
+                }else{
+                    FancyToast.makeText(LockScreenPin.this, "Wrong Pin!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
+                    pinWrongStatus++;
+
+                    if (pinWrongStatus == 3) {
+
+                        if(preferencesGlobal.getBoolean("ENABLE_SELFIE",false)) {
+                            takePictire();
+                        }
+
+                        if(switchAlarmTapped) {
+                            mp.setLooping(true);
+                            mp.start();
+                        }
+
+                        FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
+                        pinWrongStatus = 0;
+                    }
+
+                }
+            }
+        });
+
+        //Blocks Home Button Pressed
+        blockHomeButton();
+
+
+    }
+
+    public void takePictire() {
+        Camera cam = openFrontCamera(mContext);
+        if (cam != null) {
+            try {
+                cam.setPreviewTexture(surfaceTexture);
+                cam.startPreview();
+                cam.startFaceDetection();
+                cam.takePicture(null, null, mPicture);
+            } catch (Exception ex) {
+                Toast.makeText(mContext, ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void blockHomeButton(){
+        HomeWatcher mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                // do something here...
+//                Toast.makeText(LockScreenPin.this, "Home Button Pressed", Toast.LENGTH_LONG).show();
+                Intent notificationIntent = new Intent(LockScreenPin.this, LockScreenPin.class);
+                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PendingIntent pendingIntent = PendingIntent.getActivity(LockScreenPin.this, 0, notificationIntent, 0);
+                try {
+                    pendingIntent.send();
+                } catch (PendingIntent.CanceledException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onHomeLongPressed() {
+//                Toast.makeText(LockScreenPin.this, "Home Button Long Pressed", Toast.LENGTH_LONG).show();
+
+            }
+        });
+        mHomeWatcher.startWatch();
     }
 
 

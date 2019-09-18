@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".OneTapLock.TapLock"></activity>
+        <activity android:name=".SelfieActivity"></activity>
+        <activity android:name=".OneTapLock.TapLock" />
         <activity android:name=".WallpaperChange.WallpaperChange" />
         <activity
             android:name=".WallpaperChange.Wallpaper"
@@ -58,7 +59,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".OneTapLock.MyAdmin"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
@@ -75,6 +75,10 @@
             android:name=".LockService"
             android:exported="false" />
     </application>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -86,9 +90,11 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
-
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>

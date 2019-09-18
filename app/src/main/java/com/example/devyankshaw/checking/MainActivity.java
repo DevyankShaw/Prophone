@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,6 +18,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -32,12 +34,12 @@ import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
 public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences preferences, prefsForDevices;
-    private Switch swtSwitch, swtAlarm, swtAutoStart;
+    private Switch swtSwitch, swtAlarm, swtAutoStart, swtTakeSelfie;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
 
-    private TextView txtSecurity, txtWallpaper,txtOneTapLock;
+    private TextView txtSecurity, txtWallpaper,txtOneTapLock,txtViewSelfie;
 
     //Check GPS Status true/false
     public static boolean checkGPSStatus(Context context){
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         txtSecurity = findViewById(R.id.txtSecurity);
         txtWallpaper = findViewById(R.id.txtWallpaper);
         txtOneTapLock = findViewById(R.id.txtOneTapLock);
+        txtViewSelfie = findViewById(R.id.txtViewSelfie);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         prefsForDevices = PreferenceManager.getDefaultSharedPreferences(this);
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         swtSwitch = findViewById(R.id.swtService);
         swtAlarm = findViewById(R.id.swtAlarm);
         swtAutoStart = findViewById(R.id.swtAutoStart);
+        swtTakeSelfie = findViewById(R.id.swtTakeSelfie);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
         boolean lockValue = settings.getBoolean("switchKeyLock", false);
@@ -71,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
         boolean autoStartValue = settings.getBoolean("SWITCH_START", false);
         swtAutoStart.setChecked(autoStartValue);
+
+        boolean takeSelfieValue = settings.getBoolean("SWITCH_SELFIE", false);
+        swtTakeSelfie.setChecked(takeSelfieValue);
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
@@ -92,6 +99,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(MainActivity.this, TapLock.class));
+                }
+            });
+
+            txtViewSelfie.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, SelfieActivity.class));
                 }
             });
         }
@@ -132,6 +146,10 @@ public class MainActivity extends AppCompatActivity {
                 handler.postDelayed(this, 1000);
             }
         };
+
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, 50);
+        }
 
         //Overlay Permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
@@ -280,6 +298,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //Saving the state of the alarm switch
                 settings.edit().putBoolean("SWITCH_START", isChecked).commit();
+            }
+        });
+
+        swtTakeSelfie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    settings.edit().putBoolean("ENABLE_SELFIE", true).commit();
+                }else{
+                    settings.edit().putBoolean("ENABLE_SELFIE", false).commit();
+                }
+                //Saving the state of the alarm switch
+                settings.edit().putBoolean("SWITCH_SELFIE", isChecked).commit();
             }
         });
 

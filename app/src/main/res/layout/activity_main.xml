@@ -81,15 +81,44 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/txtSecurity"
-            style="@style/sectionHeader"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="4dp"
-            android:text="Security &amp; Password"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:textSize="22sp" />
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Switch
+                    android:id="@+id/swtTakeSelfie"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:paddingLeft="4dp"
+                    android:text="Take Selfie"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textSize="22sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txtViewSelfie"
+                style="@style/sectionHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:text="View Selfie"
+                android:textAppearance="@style/TextAppearance.AppCompat" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/txtWallpaper"
@@ -108,6 +137,16 @@
             android:layout_height="wrap_content"
             android:paddingLeft="4dp"
             android:text="One Tap Lock"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/txtSecurity"
+            style="@style/sectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:text="Security &amp; Password"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:textSize="22sp" />
 
