@@ -12,4 +12,9 @@
     <string name="shortcut_long_label">One Tap Lock</string>
     <string name="shortcut_disabled_message">Disabled Message</string>
     <string name="shortcut_short_label">One Tap Lock</string>
+
+    <string name="security_mobile_no">**Security Mobile Number is the mobile number which will be used to send notification if your current(this) phone is stolen.</string>
+    <string name="security_mobile_note">Note: Enter the number which is present in other device.</string>
+    <string name="security_email">*Security Email is the email which will be used to send notification if your current(this) phone is stolen.</string>
+    <string name="security_email_note">Note: Enter the email which is logged in on other device also.</string>
 </resources>

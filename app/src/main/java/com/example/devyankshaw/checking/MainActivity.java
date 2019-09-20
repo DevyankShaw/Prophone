@@ -28,6 +28,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.devyankshaw.checking.OneTapLock.TapLock;
+import com.example.devyankshaw.checking.SecurityPassword.AddSecurityActivity;
 import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
 
 
