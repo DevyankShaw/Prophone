@@ -187,7 +187,12 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         // Activity's been resumed
         isPaused = false;
 
+        //Hide the Navigation bar
+        final int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        final View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(uiOptions);
 
+        executeDelayed();
     }
 
     public void collapseNow() {
@@ -312,6 +317,8 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
         mContext = getApplicationContext();
         surfaceTexture = new SurfaceTexture(0);
+
+        FullScreencall();
 
         layoutPin = findViewById(R.id.layoutPin);
 
@@ -502,6 +509,47 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                 edtPin.append("0");
                 break;
 
+        }
+    }
+
+    public void FullScreencall() {
+        final View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    decorView.setSystemUiVisibility(
+                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
+        });
+
+    }
+
+    private void executeDelayed() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // execute after 500ms
+                hideNavBar();
+            }
+        }, 5);
+    }
+
+
+    private void hideNavBar() {
+        if (Build.VERSION.SDK_INT >= 19) {
+            View v = getWindow().getDecorView();
+            v.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
 }

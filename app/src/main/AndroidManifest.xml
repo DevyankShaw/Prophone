@@ -12,7 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SplashActivity" android:theme="@style/AppTheme.Dark">
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@style/AppTheme.Dark">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,12 +26,10 @@
         </activity>
         <activity
             android:name=".SignUpActivity"
-            android:theme="@style/AppTheme.Dark">
-        </activity>
+            android:theme="@style/AppTheme.Dark"></activity>
         <activity
             android:name=".SignInActivity"
-            android:theme="@style/AppTheme.Dark">
-        </activity>
+            android:theme="@style/AppTheme.Dark"></activity>
         <activity android:name=".SelfieActivity" />
         <activity android:name=".OneTapLock.TapLock" />
         <activity android:name=".WallpaperChange.WallpaperChange" />
@@ -40,7 +40,14 @@
         <activity
             android:name=".LockScreenPassword"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
+            android:theme="@style/AppFullScreenTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.MONKEY"/>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".SecurityPassword.PasswordActivity"
             android:windowSoftInputMode="stateHidden" />
@@ -48,13 +55,27 @@
         <activity
             android:name=".LockScreenPattern"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
+            android:theme="@style/AppFullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.MONKEY"/>
+            </intent-filter>
+        </activity>
         <activity android:name=".SecurityPassword.PatternActivity" />
         <activity android:name=".SecurityPassword.PinActivity" />
         <activity
             android:name=".LockScreenPin"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" />
+            android:theme="@style/AppFullScreenTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.MONKEY"/>
+            </intent-filter>
+        </activity>
         <activity android:name=".MainActivity">
 
         </activity>
@@ -85,11 +106,13 @@
             android:name=".LockService"
             android:exported="false" />
     </application>
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -104,7 +127,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
-
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>

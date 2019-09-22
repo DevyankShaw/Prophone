@@ -1,6 +1,7 @@
 package com.example.devyankshaw.checking;
 
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,8 +18,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
+    Runnable checkOverlaySetting;
+    Handler handler;
+
 
     private TextView txtSecurity, txtWallpaper,txtOneTapLock,txtViewSelfie;
 
@@ -80,36 +85,7 @@ public class MainActivity extends AppCompatActivity {
         boolean takeSelfieValue = settings.getBoolean("SWITCH_SELFIE", false);
         swtTakeSelfie.setChecked(takeSelfieValue);
 
-        //This is for the first time to block Set Password when user clicks
-        if(settings.getInt("switchFirst", 0) == 101){
-            txtSecurity.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
-                }
-            });
 
-            txtWallpaper.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, Wallpaper.class));
-                }
-            });
-
-            txtOneTapLock.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, TapLock.class));
-                }
-            });
-
-            txtViewSelfie.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(MainActivity.this, SelfieActivity.class));
-                }
-            });
-        }
 
         //Dialog for network and GPS is not available
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
@@ -129,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Opens the MainActivity as soon as the user gives the overlay permission
-        final Handler handler = new Handler();
-        Runnable checkOverlaySetting = new Runnable() {
+        handler = new Handler();
+        checkOverlaySetting = new Runnable() {
             @Override
             @TargetApi(23)
             public void run() {
@@ -142,15 +118,9 @@ public class MainActivity extends AppCompatActivity {
                     Intent i = new Intent(MainActivity.this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(i);
-                    return;
                 }
-                handler.postDelayed(this, 1000);
             }
         };
-
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, 50);
-        }
 
         //Overlay Permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
@@ -158,14 +128,21 @@ public class MainActivity extends AppCompatActivity {
                 to overlay the widget to others then this if blocks executes
              */
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            Uri.parse("package:" + getPackageName());
+            intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
             startActivityForResult(intent, REQUEST_CODE);
-            handler.postDelayed(checkOverlaySetting, 1000);
+            handler.postDelayed(checkOverlaySetting, 4000);
             finish();
-            //startActivity(intent);
+
         } else {
-            floatTheViewOnTheScreen();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+                }else{
+                    floatTheViewOnTheScreen();
+                }
+            }
         }
+
 
 
 
@@ -235,6 +212,96 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //This is for the first time to block Set Password when user clicks
+        if(settings.getInt("switchFirst", 0) == 101){
+            txtSecurity.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
+                }
+            });
+
+            txtWallpaper.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, Wallpaper.class));
+                }
+            });
+
+            txtOneTapLock.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, TapLock.class));
+                }
+            });
+
+            txtViewSelfie.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, SelfieActivity.class));
+                }
+            });
+
+            swtAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        settings.edit().putBoolean("ENABLE_ALARM", true).commit();
+                    }else{
+                        settings.edit().putBoolean("ENABLE_ALARM", false).commit();
+                    }
+                    //Saving the state of the alarm switch
+                    settings.edit().putBoolean("SWITCH_ALARM", isChecked).commit();
+                }
+            });
+
+            swtAutoStart.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        settings.edit().putBoolean("AUTO_START", true).commit();
+                    }else{
+                        settings.edit().putBoolean("AUTO_START", false).commit();
+                    }
+                    //Saving the state of the alarm switch
+                    settings.edit().putBoolean("SWITCH_START", isChecked).commit();
+                }
+            });
+
+            swtTakeSelfie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        settings.edit().putBoolean("ENABLE_SELFIE", true).commit();
+                    }else{
+                        settings.edit().putBoolean("ENABLE_SELFIE", false).commit();
+                    }
+                    //Saving the state of the alarm switch
+                    settings.edit().putBoolean("SWITCH_SELFIE", isChecked).commit();
+                }
+            });
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (requestCode == MY_CAMERA_REQUEST_CODE && Settings.canDrawOverlays(MainActivity.this)) {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    floatTheViewOnTheScreen();
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+                }
+            }
+        }
+    }
+
     //Check Internet Connection Status true/false
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
@@ -260,12 +327,11 @@ public class MainActivity extends AppCompatActivity {
 
                             settings.edit().putBoolean("my_first_time", false).commit();
                     }
-                    else if(settings.getInt("switchFirst", 0) == 101){
+                    else if(settings.getInt("switchFirst", 0) == 101) {
                         Intent intent = new Intent(MainActivity.this, LockService.class);
                         //intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
                         ContextCompat.startForegroundService(MainActivity.this, intent.setAction(Intent.ACTION_SCREEN_OFF));
                     }
-
                 }else {
                     stopService(new Intent(MainActivity.this,LockService.class));
                 }
@@ -276,44 +342,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        swtAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    settings.edit().putBoolean("ENABLE_ALARM", true).commit();
-                }else{
-                    settings.edit().putBoolean("ENABLE_ALARM", false).commit();
-                }
-                //Saving the state of the alarm switch
-                settings.edit().putBoolean("SWITCH_ALARM", isChecked).commit();
-            }
-        });
-
-        swtAutoStart.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    settings.edit().putBoolean("AUTO_START", true).commit();
-                }else{
-                    settings.edit().putBoolean("AUTO_START", false).commit();
-                }
-                //Saving the state of the alarm switch
-                settings.edit().putBoolean("SWITCH_START", isChecked).commit();
-            }
-        });
-
-        swtTakeSelfie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    settings.edit().putBoolean("ENABLE_SELFIE", true).commit();
-                }else{
-                    settings.edit().putBoolean("ENABLE_SELFIE", false).commit();
-                }
-                //Saving the state of the alarm switch
-                settings.edit().putBoolean("SWITCH_SELFIE", isChecked).commit();
-            }
-        });
 
     }
 
@@ -342,5 +370,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }
