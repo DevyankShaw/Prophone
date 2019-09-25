@@ -19,23 +19,26 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.devyankshaw.checking.OneTapLock.TapLock;
 import com.example.devyankshaw.checking.SecurityPassword.AddSecurityActivity;
 import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences preferences, prefsForDevices;
+    private LinearLayout layoutHide;
     private Switch swtSwitch, swtAlarm, swtAutoStart, swtTakeSelfie;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
@@ -43,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     Runnable checkOverlaySetting;
     Handler handler;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
 
 
     private TextView txtSecurity, txtWallpaper,txtOneTapLock,txtViewSelfie;
@@ -58,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+
+        layoutHide = findViewById(R.id.layoutHide);
 
         txtSecurity = findViewById(R.id.txtSecurity);
         txtWallpaper = findViewById(R.id.txtWallpaper);
@@ -85,8 +96,6 @@ public class MainActivity extends AppCompatActivity {
         boolean takeSelfieValue = settings.getBoolean("SWITCH_SELFIE", false);
         swtTakeSelfie.setChecked(takeSelfieValue);
 
-
-
         //Dialog for network and GPS is not available
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Network and GPS Alert!!!");
@@ -102,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
         if(!(isNetworkAvailable() && checkGPSStatus(this))){
             alertDialog.show();
         }
+
+
 
 
         //Opens the MainActivity as soon as the user gives the overlay permission
@@ -125,8 +136,7 @@ public class MainActivity extends AppCompatActivity {
         //Overlay Permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
             /*If the android version is >= API 23/Marshmallow && if the settings of the device doesn't allow/gives permission
-                to overlay the widget to others then this if blocks executes
-             */
+                to overlay the widget to others then this if blocks executes*/
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
             startActivityForResult(intent, REQUEST_CODE);
@@ -142,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
 
 
 
@@ -218,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
         //This is for the first time to block Set Password when user clicks
         if(settings.getInt("switchFirst", 0) == 101){
+            layoutHide.setAlpha(1.0f);
             txtSecurity.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -311,21 +321,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void floatTheViewOnTheScreen() {
+
         swtSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
                     //This if is executed when the app is opened for the first time
                     if (settings.getBoolean("my_first_time", true)) {
+                        layoutHide.setAlpha(1.0f);
                         startActivity(new Intent(MainActivity.this, AddSecurityActivity.class));
 
-                            SharedPreferences.Editor editorLock = settings.edit();
-                            editorLock.putInt("switchFirst", 101);
-                            editorLock.commit();
+                        SharedPreferences.Editor editorLock = settings.edit();
+                        editorLock.putInt("switchFirst", 101);
+                        editorLock.commit();
 
 
-                            settings.edit().putBoolean("my_first_time", false).commit();
+                        settings.edit().putBoolean("my_first_time", false).commit();
                     }
                     else if(settings.getInt("switchFirst", 0) == 101) {
                         Intent intent = new Intent(MainActivity.this, LockService.class);
@@ -336,12 +347,11 @@ public class MainActivity extends AppCompatActivity {
                     stopService(new Intent(MainActivity.this,LockService.class));
                 }
                 //Saving the state of the switch i.e swtLock
-                    SharedPreferences.Editor editorLock = settings.edit();
-                    editorLock.putBoolean("switchKeyLock", isChecked);
-                    editorLock.commit();
+                SharedPreferences.Editor editorLock = settings.edit();
+                editorLock.putBoolean("switchKeyLock", isChecked);
+                editorLock.commit();
             }
         });
-
 
     }
 

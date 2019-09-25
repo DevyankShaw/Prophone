@@ -41,12 +41,6 @@
             android:name=".LockScreenPassword"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.MONKEY"/>
-            </intent-filter>
         </activity>
         <activity
             android:name=".SecurityPassword.PasswordActivity"
@@ -56,12 +50,6 @@
             android:name=".LockScreenPattern"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.MONKEY"/>
-            </intent-filter>
         </activity>
         <activity android:name=".SecurityPassword.PatternActivity" />
         <activity android:name=".SecurityPassword.PinActivity" />
@@ -69,12 +57,6 @@
             android:name=".LockScreenPin"
             android:screenOrientation="portrait"
             android:theme="@style/AppFullScreenTheme" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.MONKEY"/>
-            </intent-filter>
         </activity>
         <activity android:name=".MainActivity">
 

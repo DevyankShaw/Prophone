@@ -32,8 +32,16 @@
                 style="@style/sectionHeader"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:paddingRight="6dp"
                 android:layout_weight="1" />
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutHide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -55,6 +63,7 @@
                 style="@style/sectionHeader"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:paddingRight="6dp"
                 android:layout_weight="1" />
         </LinearLayout>
 
@@ -78,6 +87,7 @@
                 style="@style/sectionHeader"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:paddingRight="6dp"
                 android:layout_weight="1" />
         </LinearLayout>
 
@@ -104,6 +114,7 @@
                     android:id="@+id/swtTakeSelfie"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:paddingRight="6dp"
                     android:layout_weight="1" />
 
             </LinearLayout>
@@ -116,6 +127,7 @@
                 android:layout_gravity="end"
                 android:layout_marginEnd="4dp"
                 android:gravity="end"
+                android:textStyle="bold"
                 android:text="View Selfie"
                 android:textAppearance="@style/TextAppearance.AppCompat" />
         </LinearLayout>
@@ -149,6 +161,8 @@
             android:text="Security &amp; Password"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:textSize="22sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
