@@ -14,6 +14,7 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -84,21 +85,8 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-            BitmapFactory.Options bfo = new BitmapFactory.Options();
-            bfo.inPreferredConfig = Bitmap.Config.RGB_565;
-            Matrix mat = new Matrix();
-            mat.postRotate(270);
-            Bitmap bmp = BitmapFactory.decodeStream(new ByteArrayInputStream(data), null, bfo);
-            Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(),
-                    bmp.getHeight(), mat, true);
-            ByteArrayOutputStream outstudentstreamOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100,
-                    outstudentstreamOutputStream);
 
-            SharedPreferences sharedPreferences=getSharedPreferences("TAKE_SELFIE",MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("imageSelfie", encodeTobase64(bitmap));
-            editor.commit();
+            new SavePhotoTaskPin().execute(data);
 
             //Closing camera
             camera.stopFaceDetection();
@@ -107,6 +95,35 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
         }
     };
+
+    class SavePhotoTaskPin extends AsyncTask<byte[], Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(byte[]... bytes) {
+
+            BitmapFactory.Options bfo = new BitmapFactory.Options();
+            bfo.inPreferredConfig = Bitmap.Config.RGB_565;
+            Matrix mat = new Matrix();
+            mat.postRotate(270);
+            Bitmap bmp = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes[0]), null, bfo);
+            Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(),
+                    bmp.getHeight(), mat, true);
+            ByteArrayOutputStream outstudentstreamOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100,
+                    outstudentstreamOutputStream);
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            SharedPreferences sharedPreferences=getSharedPreferences("TAKE_SELFIE",MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("imageSelfie", encodeTobase64(bitmap));
+            editor.commit();
+        }
+    }
 
 
 

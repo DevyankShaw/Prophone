@@ -41,6 +41,7 @@ public class LockService extends Service {
         filter1.setPriority(999);
         registerReceiver(userPresentBroadcastReceiver, filter1);
 
+        preferences = getSharedPreferences(PREFS_NAME, 0);
 
         if (intent == null || intent.getAction() == null) {
             //Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
@@ -57,7 +58,6 @@ public class LockService extends Service {
         }
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        preferences = getSharedPreferences(PREFS_NAME, 0);
         // Create a new PhoneStateListener
         listener = new PhoneStateListener() {
             @Override
@@ -97,7 +97,6 @@ public class LockService extends Service {
 
         return START_STICKY;
     }
-
 
     @Override
     public void onDestroy() {
