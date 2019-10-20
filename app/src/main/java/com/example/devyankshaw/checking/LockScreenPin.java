@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
@@ -29,10 +30,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
 import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.io.ByteArrayInputStream;
@@ -52,7 +60,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     private SharedPreferences prefs, preferencesGlobal;
     private boolean switchAlarmTapped;
 
-    private int  pinWrongStatus;
+    DatabaseReference databaseReference;
     private MediaPlayer mp;
 
     // To keep track of activity's window focus
@@ -66,11 +74,13 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
     private SurfaceTexture surfaceTexture;
     private Context mContext;
+    private int pinWrongStatus;
 
     private boolean notificationPanelPin;
     public ConstraintLayout layoutPin;
     private Button btnSumbit;
     private EditText edtPin;
+    private TextView txtPin;
     private ImageView imgClose;
     private Button btnOne, btnTwo, btnThree, btnFour, btnFive, btnSix, btnSeven, btnEight, btnNine, btnZero;
 
@@ -82,6 +92,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         return BitmapFactory
                 .decodeByteArray(decodedByte, 0, decodedByte.length);
     }
+
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
@@ -96,35 +107,15 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         }
     };
 
-    class SavePhotoTaskPin extends AsyncTask<byte[], Void, Bitmap> {
-
-        @Override
-        protected Bitmap doInBackground(byte[]... bytes) {
-
-            BitmapFactory.Options bfo = new BitmapFactory.Options();
-            bfo.inPreferredConfig = Bitmap.Config.RGB_565;
-            Matrix mat = new Matrix();
-            mat.postRotate(270);
-            Bitmap bmp = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes[0]), null, bfo);
-            Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(),
-                    bmp.getHeight(), mat, true);
-            ByteArrayOutputStream outstudentstreamOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100,
-                    outstudentstreamOutputStream);
-
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-            SharedPreferences sharedPreferences=getSharedPreferences("TAKE_SELFIE",MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("imageSelfie", encodeTobase64(bitmap));
-            editor.commit();
+    //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
+    @Override
+    public void finish() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.finishAndRemoveTask();
+        } else {
+            super.finish();
         }
     }
-
 
 
     //Blocked back button pressed when the pin/password screen is active
@@ -147,34 +138,94 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    //Completely removes the app from the recent task when the user gives his correct pin to unlock the screen
-    @Override
-    public void finish() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            super.finishAndRemoveTask();
-        }
-        else {
-            super.finish();
-        }
-    }
-
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-            if (!hasFocus) {//If activity/window lost it's focus i.e any system dialog appears etc then this if block executes
+        if (!hasFocus) {//If activity/window lost it's focus i.e any system dialog appears etc then this if block executes
 
-                // Method that handles loss of window focus
-                    collapseNow();
+            // Method that handles loss of window focus
+            collapseNow();
 
-                // Close every kind of system dialog
-                Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                sendBroadcast(closeDialog);//Sends signal/message  to the system
-
-
-            }
+            // Close every kind of system dialog
+            Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            sendBroadcast(closeDialog);//Sends signal/message  to the system
 
 
         }
+
+
+    }
+
+    public void collapseNow() {
+
+
+        // Initialize 'collapseNotificationHandler'
+        if (collapseNotificationHandler == null) {
+            collapseNotificationHandler = new Handler();
+        }
+
+        // If window focus has been lost && activity is not in a paused state
+        // Its a valid check because showing of notification panel
+        // steals the focus from current activity's window, but does not
+        // 'pause' the activity
+        if (!currentFocus && !isPaused) {
+
+
+            // Post a Runnable with some delay - currently set to 300 ms
+            collapseNotificationHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // Use reflection to trigger a method from 'StatusBarManager'
+
+                    @SuppressLint("WrongConstant") Object statusBarService = getSystemService("statusbar");
+                    Class<?> statusBarManager = null;
+
+                    try {
+                        statusBarManager = Class.forName("android.app.StatusBarManager");
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    Method collapseStatusBar = null;
+
+                    try {
+
+                        // Prior to API 17, the method to call is 'collapse()'
+                        // API 17 onwards, the method to call is `collapsePanels()`
+
+                        if (Build.VERSION.SDK_INT > 16) {
+                            collapseStatusBar = statusBarManager.getMethod("collapsePanels");
+                        } else {
+                            collapseStatusBar = statusBarManager.getMethod("collapse");
+                        }
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+
+                    collapseStatusBar.setAccessible(true);
+
+                    try {
+                        collapseStatusBar.invoke(statusBarService);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Check if the window focus has been returned
+                    // If it hasn't been returned, post this Runnable again
+                    // Currently, the delay is 100 ms. You can change this
+                    // value to suit your needs.
+                    notificationPanelPin = preferencesGlobal.getBoolean("notificationPanel", false);
+                    if (!currentFocus && !isPaused && !notificationPanelPin) {
+                        collapseNotificationHandler.postDelayed(this, 100L);
+                    }
+                }
+            }, 300L);
+        }
+    }
 
 
     @Override
@@ -212,75 +263,150 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         executeDelayed();
     }
 
-    public void collapseNow() {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lock_screen_pin);
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+
+        mContext = getApplicationContext();
+        surfaceTexture = new SurfaceTexture(0);
+
+        FullScreencall();
+
+        layoutPin = findViewById(R.id.layoutPin);
+
+        //Displaying the wallpaper image that is set by the user
+        SharedPreferences preferences = getSharedPreferences("WallpaperImage", MODE_PRIVATE);
+        if (preferences.getBoolean("isImage", false) == true && preferences.getBoolean("isImageChooser", false) == false) {
+            int imageReference = preferences.getInt("imageReference", 0);
+            layoutPin.setBackgroundResource(imageReference);
+        }
+        //Displaying the wallpaper image that is set by the user from the gallery
+        if (preferences.getBoolean("isImage", false) == false && preferences.getBoolean("isImageChooser", false) == true) {
+            String imageChooser = preferences.getString("imageChooser", "");
+            BitmapDrawable background = new BitmapDrawable(this.getResources(), decodeBase64(imageChooser));
+            layoutPin.setBackground(background);
+        }
+
+        mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
+        preferencesGlobal = getSharedPreferences(PREFS_NAME, 0);
+        switchAlarmTapped = preferencesGlobal.getBoolean("ENABLE_ALARM", false);
 
 
-            // Initialize 'collapseNotificationHandler'
-            if (collapseNotificationHandler == null) {
-                collapseNotificationHandler = new Handler();
+        btnOne = findViewById(R.id.btnOne);
+        btnTwo = findViewById(R.id.btnTwo);
+        btnThree = findViewById(R.id.btnThree);
+        btnFour = findViewById(R.id.btnFour);
+        btnFive = findViewById(R.id.btnFive);
+        btnSix = findViewById(R.id.btnSix);
+        btnSeven = findViewById(R.id.btnSeven);
+        btnEight = findViewById(R.id.btnEight);
+        btnNine = findViewById(R.id.btnNine);
+        btnZero = findViewById(R.id.btnZero);
+
+        edtPin = findViewById(R.id.edtPin);
+        txtPin = findViewById(R.id.textView_Pin);
+
+        btnOne.setOnClickListener(this);
+        btnTwo.setOnClickListener(this);
+        btnThree.setOnClickListener(this);
+        btnFour.setOnClickListener(this);
+        btnFive.setOnClickListener(this);
+        btnSix.setOnClickListener(this);
+        btnSeven.setOnClickListener(this);
+        btnEight.setOnClickListener(this);
+        btnNine.setOnClickListener(this);
+        btnZero.setOnClickListener(this);
+
+
+        imgClose = findViewById(R.id.imgClose);
+        imgClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                edtPin.getText().clear();
             }
+        });
 
-            // If window focus has been lost && activity is not in a paused state
-            // Its a valid check because showing of notification panel
-            // steals the focus from current activity's window, but does not
-            // 'pause' the activity
-            if (!currentFocus && !isPaused) {
+        btnSumbit = findViewById(R.id.btnSubmit);
+        btnSumbit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String pwd = edtPin.getText().toString().trim();
 
+                if (pwd.isEmpty()) {
+                    edtPin.setError("Pin required");
+                    edtPin.requestFocus();
+                    return;
+                }
 
-                // Post a Runnable with some delay - currently set to 300 ms
-                collapseNotificationHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Use reflection to trigger a method from 'StatusBarManager'
+                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreenPin.this);
+                int pin = prefs.getInt(KEY_PASSWORD, 0000);
+                if (Integer.parseInt(edtPin.getText().toString()) == pin) {
+                    if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("micromax") ||
+                            Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+                        finishAffinity(); //kill other activities
+                    } else {
+                        finish();
+                    }
 
-                        @SuppressLint("WrongConstant") Object statusBarService = getSystemService("statusbar");
-                        Class<?> statusBarManager = null;
-
-                        try {
-                            statusBarManager = Class.forName("android.app.StatusBarManager");
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        }
-
-                        Method collapseStatusBar = null;
-
-                        try {
-
-                            // Prior to API 17, the method to call is 'collapse()'
-                            // API 17 onwards, the method to call is `collapsePanels()`
-
-                            if (Build.VERSION.SDK_INT > 16) {
-                                collapseStatusBar = statusBarManager.getMethod("collapsePanels");
-                            } else {
-                                collapseStatusBar = statusBarManager.getMethod("collapse");
-                            }
-                        } catch (NoSuchMethodException e) {
-                            e.printStackTrace();
-                        }
-
-                        collapseStatusBar.setAccessible(true);
-
-                        try {
-                            collapseStatusBar.invoke(statusBarService);
-                        } catch (IllegalArgumentException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-
-                        // Check if the window focus has been returned
-                        // If it hasn't been returned, post this Runnable again
-                        // Currently, the delay is 100 ms. You can change this
-                        // value to suit your needs.
-                        notificationPanelPin = preferencesGlobal.getBoolean("notificationPanel",false);
-                        if (!currentFocus && !isPaused && !notificationPanelPin) {
-                            collapseNotificationHandler.postDelayed(this, 100L);
+                    if (switchAlarmTapped) {
+                        pinWrongStatus = 0;
+                        if (mp.isPlaying()) {
+                            mp.stop();
                         }
                     }
-                }, 300L);
+                } else {
+                    FancyToast.makeText(LockScreenPin.this, "Wrong Pin!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
+                    pinWrongStatus++;
+
+                    if (pinWrongStatus == 3) {
+
+                        if (preferencesGlobal.getBoolean("ENABLE_SELFIE", false)) {
+                            takePictire();
+                        }
+
+                        if (switchAlarmTapped) {
+                            mp.setLooping(true);
+                            mp.start();
+                        }
+
+                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        DatabaseReference uidRef = databaseReference.child(uid);
+                        uidRef.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                String name = dataSnapshot.child("name").getValue().toString();
+                                String number = dataSnapshot.child("number").getValue().toString();
+                                txtPin.setText("This device belongs to " + name + ".\n" +
+                                        "Kindly contact the given number.\n" + number);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
+                        pinWrongStatus = 0;
+                    }
+
+                }
             }
+        });
+
+        //Blocks Home Button Pressed
+        blockHomeButton();
+
+
     }
 
     // method for converting bitmap to base64
@@ -324,148 +450,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         return null;
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                |WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lock_screen_pin);
-
-        mContext = getApplicationContext();
-        surfaceTexture = new SurfaceTexture(0);
-
-        FullScreencall();
-
-        layoutPin = findViewById(R.id.layoutPin);
-
-        //Displaying the wallpaper image that is set by the user
-        SharedPreferences preferences = getSharedPreferences("WallpaperImage",MODE_PRIVATE);
-        if(preferences.getBoolean("isImage",false)==true && preferences.getBoolean("isImageChooser",false)==false){
-            int imageReference = preferences.getInt("imageReference", 0);
-            layoutPin.setBackgroundResource(imageReference);
-        }
-        //Displaying the wallpaper image that is set by the user from the gallery
-        if(preferences.getBoolean("isImage",false)==false && preferences.getBoolean("isImageChooser",false)==true){
-            String imageChooser = preferences.getString("imageChooser","");
-            BitmapDrawable background = new BitmapDrawable(this.getResources(), decodeBase64(imageChooser));
-            layoutPin.setBackground(background);
-        }
-
-        mp = MediaPlayer.create(LockScreenPin.this, R.raw.siren);
-        preferencesGlobal = getSharedPreferences(PREFS_NAME, 0);
-        switchAlarmTapped = preferencesGlobal.getBoolean("ENABLE_ALARM", false);
-
-
-        btnOne = findViewById(R.id.btnOne);
-        btnTwo = findViewById(R.id.btnTwo);
-        btnThree = findViewById(R.id.btnThree);
-        btnFour = findViewById(R.id.btnFour);
-        btnFive = findViewById(R.id.btnFive);
-        btnSix = findViewById(R.id.btnSix);
-        btnSeven = findViewById(R.id.btnSeven);
-        btnEight = findViewById(R.id.btnEight);
-        btnNine = findViewById(R.id.btnNine);
-        btnZero = findViewById(R.id.btnZero);
-
-        edtPin = findViewById(R.id.edtPin);
-
-        btnOne.setOnClickListener(this);
-        btnTwo.setOnClickListener(this);
-        btnThree.setOnClickListener(this);
-        btnFour.setOnClickListener(this);
-        btnFive.setOnClickListener(this);
-        btnSix.setOnClickListener(this);
-        btnSeven.setOnClickListener(this);
-        btnEight.setOnClickListener(this);
-        btnNine.setOnClickListener(this);
-        btnZero.setOnClickListener(this);
-
-
-
-        imgClose = findViewById(R.id.imgClose);
-        imgClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                edtPin.getText().clear();
-            }
-        });
-
-        btnSumbit = findViewById(R.id.btnSubmit);
-        btnSumbit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String pwd = edtPin.getText().toString().trim();
-
-                if(pwd.isEmpty()){
-                    edtPin.setError("Pin required");
-                    edtPin.requestFocus();
-                    return;
-                }
-
-                prefs = PreferenceManager.getDefaultSharedPreferences(LockScreenPin.this);
-                int pin = prefs.getInt(KEY_PASSWORD, 0000);
-                if(Integer.parseInt(edtPin.getText().toString()) == pin) {
-                    if (Build.MANUFACTURER.equalsIgnoreCase("realme") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("oppo") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("gionee") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("micromax") ||
-                            Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-                        finishAffinity(); //kill other activities
-                    } else {
-                        finish();
-                    }
-
-                    if(switchAlarmTapped) {
-                        pinWrongStatus = 0;
-                        if (mp.isPlaying()) {
-                            mp.stop();
-                        }
-                    }
-                }else{
-                    FancyToast.makeText(LockScreenPin.this, "Wrong Pin!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
-                    pinWrongStatus++;
-
-                    if (pinWrongStatus == 3) {
-
-                        if(preferencesGlobal.getBoolean("ENABLE_SELFIE",false)) {
-                            takePictire();
-                        }
-
-                        if(switchAlarmTapped) {
-                            mp.setLooping(true);
-                            mp.start();
-                        }
-
-                        FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
-                        pinWrongStatus = 0;
-                    }
-
-                }
-            }
-        });
-
-        //Blocks Home Button Pressed
-        blockHomeButton();
-
-
-    }
-
-    public void takePictire() {
-        Camera cam = openFrontCamera(mContext);
-        if (cam != null) {
-            try {
-                cam.setPreviewTexture(surfaceTexture);
-                cam.startPreview();
-                cam.startFaceDetection();
-                cam.takePicture(null, null, mPicture);
-            } catch (Exception ex) {
-                Toast.makeText(mContext, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    public void blockHomeButton(){
+    public void blockHomeButton() {
         HomeWatcher mHomeWatcher = new HomeWatcher(this);
         mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
             @Override
@@ -491,10 +476,23 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         mHomeWatcher.startWatch();
     }
 
+    public void takePictire() {
+        Camera cam = openFrontCamera(mContext);
+        if (cam != null) {
+            try {
+                cam.setPreviewTexture(surfaceTexture);
+                cam.startPreview();
+                cam.startFaceDetection();
+                cam.takePicture(null, null, mPicture);
+            } catch (Exception ex) {
+                Toast.makeText(mContext, ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btnOne:
                 edtPin.append("1");
                 break;
@@ -531,7 +529,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
     public void FullScreencall() {
         final View decorView = getWindow().getDecorView();
-        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
             @Override
             public void onSystemUiVisibilityChange(int visibility) {
                 if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
@@ -544,6 +542,35 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
             }
         });
 
+    }
+
+    class SavePhotoTaskPin extends AsyncTask<byte[], Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(byte[]... bytes) {
+
+            BitmapFactory.Options bfo = new BitmapFactory.Options();
+            bfo.inPreferredConfig = Bitmap.Config.RGB_565;
+            Matrix mat = new Matrix();
+            mat.postRotate(270);
+            Bitmap bmp = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes[0]), null, bfo);
+            Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(),
+                    bmp.getHeight(), mat, true);
+            ByteArrayOutputStream outstudentstreamOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100,
+                    outstudentstreamOutputStream);
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            SharedPreferences sharedPreferences = getSharedPreferences("TAKE_SELFIE", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("imageSelfie", encodeTobase64(bitmap));
+            editor.commit();
+        }
     }
 
     private void executeDelayed() {
