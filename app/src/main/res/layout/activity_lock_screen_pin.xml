@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layoutPin"
@@ -11,30 +11,25 @@
 
 
     <FrameLayout
+        android:id="@+id/frameLayout3"
         android:layout_width="194dp"
         android:layout_height="56dp"
-        android:layout_marginStart="108dp"
-        android:layout_marginEnd="108dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginTop="52dp"
         android:background="@drawable/password_border"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintHorizontal_bias="0.534"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout">
 
         <Button
             android:id="@+id/btnSubmit"
             android:layout_width="194dp"
             android:layout_height="56dp"
-            android:layout_marginBottom="86dp"
             android:background="@android:color/transparent"
             android:text="Submit"
             android:textAllCaps="false"
             android:textColor="#fff"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:textSize="20sp" />
     </FrameLayout>
 
     <FrameLayout
@@ -42,14 +37,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="106dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="106dp"
         android:background="@drawable/password_border"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/frameLayout2">
 
-        <android.support.v7.widget.GridLayout
+        <androidx.gridlayout.widget.GridLayout
             android:id="@+id/gridLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -179,18 +174,19 @@
                 app:layout_row="3" />
 
 
-        </android.support.v7.widget.GridLayout>
+        </androidx.gridlayout.widget.GridLayout>
     </FrameLayout>
 
 
     <FrameLayout
         android:id="@+id/frameLayout2"
         android:layout_width="318dp"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="47dp"
         android:layout_marginTop="23dp"
         android:layout_marginEnd="47dp"
         android:background="@drawable/password_border"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/clock">
@@ -305,4 +301,4 @@
         app:layout_constraintTop_toBottomOf="@+id/clock" />
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

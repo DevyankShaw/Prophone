@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -14,14 +15,13 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,8 +33,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
 import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.model.Message;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,23 +57,40 @@ import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import static android.accounts.AccountManager.KEY_PASSWORD;
 import static com.example.devyankshaw.checking.MainActivity.PREFS_NAME;
+import static com.example.devyankshaw.checking.MainActivity.mCredential;
 
 public class LockScreenPin extends AppCompatActivity implements View.OnClickListener {
-
 
     private SharedPreferences prefs, preferencesGlobal;
     private boolean switchAlarmTapped;
 
     DatabaseReference databaseReference;
+    private static final String TAG = "LockScreenPin";
     private MediaPlayer mp;
+    public String fileName = "";
 
     // To keep track of activity's window focus
     boolean currentFocus;
@@ -71,6 +100,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
     Handler collapseNotificationHandler;
     Runnable runnable;
+    private String usersEmail;
 
     private SurfaceTexture surfaceTexture;
     private Context mContext;
@@ -378,23 +408,25 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                             mp.start();
                         }
 
-                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        DatabaseReference uidRef = databaseReference.child(uid);
-                        uidRef.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                String name = dataSnapshot.child("name").getValue().toString();
-                                String number = dataSnapshot.child("number").getValue().toString();
-                                txtPin.setText("This device belongs to " + name + ".\n" +
-                                        "Kindly contact the given number.\n" + number);
-                            }
+                        new MakeRequestTask(mCredential).execute();
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        if (preferencesGlobal.getBoolean("ENABLE_DISPLAY", false)) {
+                            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            DatabaseReference uidRef = databaseReference.child(uid);
+                            uidRef.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    String name = dataSnapshot.child("name").getValue().toString();
+                                    String number = dataSnapshot.child("number").getValue().toString();
+                                    txtPin.setText("Please hand over the device to " + name + "." + "\n" + number + "\nCall Now!");
+                                }
 
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                         FancyToast.makeText(LockScreenPin.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
                         pinWrongStatus = 0;
                     }
@@ -407,6 +439,43 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         blockHomeButton();
 
 
+    }
+
+    public String getPathFromURI(Uri contentUri) {
+        String res = null;
+        String[] proj = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(contentUri, proj, "", null, "");
+        assert cursor != null;
+        if (cursor.moveToFirst()) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            res = cursor.getString(column_index);
+        }
+        cursor.close();
+        return res;
+    }
+
+    private void getToDetails() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference uidRef = databaseReference.child(uid);
+        uidRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                usersEmail = dataSnapshot.child("email").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public Uri getImageUri(Bitmap inImage) {
+        String FILENAME = BitMapToString(inImage);
+        String PATH = "/mnt/sdcard/" + FILENAME;
+        File f = new File(PATH);
+        Uri yourUri = Uri.fromFile(f);
+        return yourUri;
     }
 
     // method for converting bitmap to base64
@@ -542,6 +611,150 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
             }
         });
 
+    }
+
+    public String BitMapToString(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] b = baos.toByteArray();
+        String temp = Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
+    }
+
+    // Async Task for sending Mail using GMail OAuth
+    private class MakeRequestTask extends AsyncTask<Void, Void, String> {
+
+        private com.google.api.services.gmail.Gmail mService = null;
+        private Exception mLastError = null;
+
+        MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.gmail.Gmail.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName(getResources().getString(R.string.app_name))
+                    .build();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        private String getDataFromApi() throws IOException {
+            // getting Values for to Address, from Address, Subject and Body
+            getToDetails();
+            String user = "me";
+            String to = usersEmail;
+            String from = mCredential.getSelectedAccountName();
+            String subject = "Testing";
+            String body = "Send Text";
+            MimeMessage mimeMessage;
+            String response = "";
+            try {
+                mimeMessage = createEmail(to, from, subject, body);
+                response = sendMessage(mService, user, mimeMessage);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+            return response;
+        }
+
+        // Method to send email
+        private String sendMessage(Gmail service,
+                                   String userId,
+                                   MimeMessage email)
+                throws MessagingException, IOException {
+            Message message = createMessageWithEmail(email);
+            // GMail's official method to send email with oauth2.0
+            message = service.users().messages().send(userId, message).execute();
+
+            /*System.out.println("Message id: " + message.getId());
+            System.out.println(message.toPrettyString());*/
+            return message.getId();
+        }
+
+        // Method to create email Params
+        private MimeMessage createEmail(String to,
+                                        String from,
+                                        String subject,
+                                        String bodyText) throws MessagingException {
+            Properties props = new Properties();
+            Session session = Session.getDefaultInstance(props, null);
+
+            MimeMessage email = new MimeMessage(session);
+            InternetAddress tAddress = new InternetAddress(to);
+            InternetAddress fAddress = new InternetAddress(from);
+
+            email.setFrom(fAddress);
+            email.addRecipient(javax.mail.Message.RecipientType.TO, tAddress);
+            email.setSubject(subject);
+
+            // Create Multipart object and add MimeBodyPart objects to this object
+            Multipart multipart = new MimeMultipart();
+
+            // Changed for adding attachment and text
+            // email.setText(bodyText);
+
+            BodyPart textBody = new MimeBodyPart();
+            textBody.setText(bodyText);
+            multipart.addBodyPart(textBody);
+
+            if (!(fileName.equals(""))) {
+                // Create new MimeBodyPart object and set DataHandler object to this object
+                MimeBodyPart attachmentBody = new MimeBodyPart();
+                String filename = fileName; // change accordingly
+                DataSource source = new FileDataSource(filename);
+                attachmentBody.setDataHandler(new DataHandler(source));
+                attachmentBody.setFileName(filename);
+                multipart.addBodyPart(attachmentBody);
+            }
+
+            //Set the multipart object to the message object
+            email.setContent(multipart);
+            return email;
+        }
+
+        private Message createMessageWithEmail(MimeMessage email)
+                throws MessagingException, IOException {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            email.writeTo(bytes);
+            String encodedEmail = com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(bytes.toByteArray());
+            Message message = new Message();
+            message.setRaw(encodedEmail);
+            return message;
+        }
+
+        @Override
+        protected void onPostExecute(String output) {
+            if (output == null) {
+                Log.i(TAG,"No results returned.");
+            } else {
+                Log.i(TAG,output);
+                Toast.makeText(mContext, output, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mLastError != null) {
+                if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Utils.REQUEST_AUTHORIZATION);
+                } else {
+                    Log.e(TAG, mLastError + "");
+                }
+            } else {
+                Log.i(TAG,"Request Cancelled.");
+            }
+        }
     }
 
     class SavePhotoTaskPin extends AsyncTask<byte[], Void, Bitmap> {

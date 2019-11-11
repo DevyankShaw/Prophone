@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1068940799184",
+    "firebase_url": "https://checking-5afd4.firebaseio.com",
+    "project_id": "checking-5afd4",
+    "storage_bucket": "checking-5afd4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068940799184:android:2c6f75f2680499c3b5c2d5",
+        "android_client_info": {
+          "package_name": "com.example.devyankshaw.checking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068940799184-08lh93dq6unogqan8goqroruiusvcub7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.devyankshaw.checking",
+            "certificate_hash": "543fb2862681b1547a15138dae5c03888eda2b8a"
+          }
+        },
+        {
+          "client_id": "1068940799184-4f0chc38187i0sutjbh90kbvs6550i96.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs9pc8Vc78P9C9BDUlHy7w9Ld2j-ZE70g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068940799184-4f0chc38187i0sutjbh90kbvs6550i96.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

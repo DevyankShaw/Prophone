@@ -32,8 +32,8 @@
                 style="@style/sectionHeader"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:paddingRight="6dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingRight="6dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -43,58 +43,29 @@
             android:alpha="0.5"
             android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:paddingLeft="4dp"
-                android:text="Enable Alarm"
-                android:textAppearance="@style/TextAppearance.AppCompat"
-                android:textSize="22sp" />
+                android:orientation="horizontal">
 
-            <Switch
-                android:id="@+id/swtAlarm"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:paddingRight="6dp"
-                android:layout_weight="1" />
-        </LinearLayout>
+                <TextView
+                    style="@style/sectionHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:paddingLeft="4dp"
+                    android:text="Enable Alarm"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textSize="22sp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:paddingLeft="4dp"
-                android:text="Auto Start"
-                android:textAppearance="@style/TextAppearance.AppCompat"
-                android:textSize="22sp" />
-
-            <Switch
-                android:id="@+id/swtAutoStart"
-                style="@style/sectionHeader"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:paddingRight="6dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+                <Switch
+                    android:id="@+id/swtAlarm"
+                    style="@style/sectionHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:paddingRight="6dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -102,66 +73,124 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    style="@style/sectionHeader"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="4"
                     android:paddingLeft="4dp"
-                    android:text="Take Selfie"
+                    android:text="Auto Start"
                     android:textAppearance="@style/TextAppearance.AppCompat"
                     android:textSize="22sp" />
 
                 <Switch
-                    android:id="@+id/swtTakeSelfie"
+                    android:id="@+id/swtAutoStart"
+                    style="@style/sectionHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:paddingRight="6dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:paddingRight="6dp" />
+            </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/sectionHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:paddingLeft="4dp"
+                    android:text="Display Details"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textSize="22sp" />
+
+                <Switch
+                    android:id="@+id/swtDisplay"
+                    style="@style/sectionHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:paddingRight="6dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:paddingLeft="4dp"
+                        android:text="Take Selfie"
+                        android:textAppearance="@style/TextAppearance.AppCompat"
+                        android:textSize="22sp" />
+
+                    <Switch
+                        android:id="@+id/swtTakeSelfie"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingRight="6dp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtViewSelfie"
+                    style="@style/sectionHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="end"
+                    android:text="View Selfie"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <TextView
-                android:id="@+id/txtViewSelfie"
+                android:id="@+id/txtWallpaper"
                 style="@style/sectionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="4dp"
-                android:gravity="end"
-                android:textStyle="bold"
-                android:text="View Selfie"
-                android:textAppearance="@style/TextAppearance.AppCompat" />
-        </LinearLayout>
+                android:paddingLeft="4dp"
+                android:text="Change Wallpaper"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="22sp" />
 
-        <TextView
-            android:id="@+id/txtWallpaper"
-            style="@style/sectionHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="4dp"
-            android:text="Change Wallpaper"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:textSize="22sp" />
+            <TextView
+                android:id="@+id/txtOneTapLock"
+                style="@style/sectionHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="4dp"
+                android:text="One Tap Lock"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="22sp" />
 
-        <TextView
-            android:id="@+id/txtOneTapLock"
-            style="@style/sectionHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="4dp"
-            android:text="One Tap Lock"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:textSize="22sp" />
+            <TextView
+                android:id="@+id/txtSecurity"
+                style="@style/sectionHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="4dp"
+                android:text="Security &amp; Password"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="22sp" />
 
-        <TextView
-            android:id="@+id/txtSecurity"
-            style="@style/sectionHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="4dp"
-            android:text="Security &amp; Password"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:textSize="22sp" />
-
+            <TextView
+                android:id="@+id/txt_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web"/>
         </LinearLayout>
 
     </LinearLayout>

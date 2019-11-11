@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    tools:context=".SecurityPassword.PinActivity">
+
+    <TextView
+        android:id="@+id/txtPinConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/linearLayoutPinConfirm"
+        android:gravity="center"
+        android:text="Enter Pin"
+        android:textColor="#000"
+        android:textSize="25sp"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/linearLayoutPinConfirm"
+        android:layout_width="315dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/gridLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="48dp"
+        android:layout_marginBottom="3dp"
+        android:background="@drawable/border_color"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <EditText
+            android:id="@+id/edtPinConfirm"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_marginLeft="4dp"
+            android:layout_weight="4"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="numberPassword"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="54dp"
+            tools:layout_editor_absoluteY="143dp" />
+
+        <ImageView
+            android:id="@+id/clearPinConfirm"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/ic_close_black_24dp"
+            android:onClick="clearPinEditText" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtPinReconfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/linearLayoutReconfirm"
+        android:gravity="center"
+        android:text="Renter Pin"
+        android:textColor="#000"
+        android:textSize="25sp"
+        android:visibility="invisible"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutReconfirm"
+        android:layout_width="315dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/gridLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="48dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/border_color"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/edtPinReconfirm"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_marginLeft="4dp"
+            android:layout_weight="4"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="numberPassword"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="54dp"
+            tools:layout_editor_absoluteY="143dp" />
+
+        <ImageView
+            android:id="@+id/clearPinReconfirm"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/ic_close_black_24dp"
+            android:onClick="clearPinEditText" />
+
+    </LinearLayout>
+
+
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="180dp"
+        android:background="@drawable/border_color"
+        android:padding="4dp"
+        app:columnCount="3"
+        app:layout_constraintVertical_bias="1.0"
+        app:rowCount="4">
+
+        <Button
+            android:id="@+id/btnOneChange"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textSize="15sp"
+            app:layout_column="0"
+            app:layout_row="0" />
+
+        <Button
+            android:id="@+id/btnTwoChange"
+            android:layout_width="105dp"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:textSize="15sp"
+            app:layout_column="1"
+            app:layout_row="0" />
+
+        <Button
+            android:id="@+id/btnThreeChange"
+            android:layout_width="101dp"
+            android:layout_height="wrap_content"
+            android:text="3"
+            android:textSize="15sp"
+            app:layout_column="2"
+            app:layout_row="0" />
+
+        <Button
+            android:id="@+id/btnFourChange"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="4"
+            android:textSize="15sp"
+            app:layout_column="0"
+            app:layout_row="1" />
+
+        <Button
+            android:id="@+id/btnFiveChange"
+            android:layout_width="105dp"
+            android:layout_height="wrap_content"
+            android:text="5"
+            android:textSize="15sp"
+            app:layout_column="1"
+            app:layout_row="1" />
+
+        <Button
+            android:id="@+id/btnSixChange"
+            android:layout_width="103dp"
+            android:layout_height="wrap_content"
+            android:text="6"
+            android:textSize="15sp"
+            app:layout_column="2"
+            app:layout_row="1" />
+
+        <Button
+            android:id="@+id/btnSevenChange"
+            android:layout_width="101dp"
+            android:layout_height="wrap_content"
+            android:text="7"
+            android:textSize="15sp"
+            app:layout_column="0"
+            app:layout_row="2" />
+
+        <Button
+            android:id="@+id/btnEightChange"
+            android:layout_width="104dp"
+            android:layout_height="wrap_content"
+            android:text="8"
+            android:textSize="15sp"
+            app:layout_column="1"
+            app:layout_row="2" />
+
+        <Button
+            android:id="@+id/btnNineChange"
+            android:layout_width="102dp"
+            android:layout_height="wrap_content"
+            android:text="9"
+            android:textSize="15sp"
+            app:layout_column="2"
+            app:layout_row="2" />
+
+        <Button
+            android:id="@+id/btnZeroChange"
+            android:layout_width="104dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="15sp"
+            app:layout_column="1"
+            app:layout_row="3" />
+
+
+    </androidx.gridlayout.widget.GridLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutPinButtonConfirm"
+        android:layout_width="303dp"
+        android:layout_height="53dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/btnCancelPinConfirm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="18dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_color"
+            android:onClick="cancelPinActivity"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btnContinuePinConfirm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/border_color"
+            android:text="Continue"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutPinButtonReconfirm"
+        android:layout_width="303dp"
+        android:layout_height="53dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="invisible">
+
+        <Button
+            android:id="@+id/btnCancelPinReconfirm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="18dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_color"
+            android:onClick="cancelPinActivity"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btnContinuePinReconfirm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/border_color"
+            android:text="Continue"
+            android:textAllCaps="false"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+</RelativeLayout>

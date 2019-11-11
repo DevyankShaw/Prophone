@@ -2,6 +2,7 @@ package com.example.devyankshaw.checking;
 
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,28 +21,39 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.example.devyankshaw.checking.OneTapLock.TapLock;
 import com.example.devyankshaw.checking.SecurityPassword.AddSecurityActivity;
 import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.gmail.GmailScopes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements LocationListener {
 
     private SharedPreferences preferences, prefsForDevices;
     private LinearLayout layoutHide;
-    private Switch swtSwitch, swtAlarm, swtAutoStart, swtTakeSelfie;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private SharedPreferences settings;
     public static final String PREFS_NAME = "MyPrefsFile";
     public final static int REQUEST_CODE = 123;
@@ -49,13 +63,28 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-
-
-    private TextView txtSecurity, txtWallpaper,txtOneTapLock,txtViewSelfie;
+    private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final String[] SCOPES = {
+            GmailScopes.GMAIL_LABELS,
+            GmailScopes.GMAIL_COMPOSE,
+            GmailScopes.GMAIL_INSERT,
+            GmailScopes.GMAIL_MODIFY,
+            GmailScopes.GMAIL_READONLY,
+            GmailScopes.MAIL_GOOGLE_COM
+    };
+    private static final String TAG = "MainActivity";
+    public static GoogleAccountCredential mCredential;
+    public String fileName = "";
+    protected LocationManager locationManager;
+    protected LocationListener locationListener;
+    URL newUrl;
+    private Switch swtSwitch, swtAlarm, swtAutoStart, swtTakeSelfie, swtDisplay;
+    private TextView txtSecurity, txtWallpaper, txtOneTapLock, txtViewSelfie;
+    private TextView txtLocation;
 
     //Check GPS Status true/false
-    public static boolean checkGPSStatus(Context context){
-        LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE );
+    public static boolean checkGPSStatus(Context context) {
+        LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         return statusOfGPS;
     }
@@ -64,6 +93,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize credentials and service object.
+        mCredential = GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(SCOPES))
+                .setBackOff(new ExponentialBackOff());
 
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
@@ -75,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
         txtOneTapLock = findViewById(R.id.txtOneTapLock);
         txtViewSelfie = findViewById(R.id.txtViewSelfie);
 
+
+        checkLocationPermission();
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+
         preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         prefsForDevices = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -82,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
         swtAlarm = findViewById(R.id.swtAlarm);
         swtAutoStart = findViewById(R.id.swtAutoStart);
         swtTakeSelfie = findViewById(R.id.swtTakeSelfie);
+        swtDisplay = findViewById(R.id.swtDisplay);
 
         settings = getSharedPreferences(PREFS_NAME, 0);
         boolean lockValue = settings.getBoolean("switchKeyLock", false);
@@ -96,6 +137,9 @@ public class MainActivity extends AppCompatActivity {
         boolean takeSelfieValue = settings.getBoolean("SWITCH_SELFIE", false);
         swtTakeSelfie.setChecked(takeSelfieValue);
 
+        boolean displayValue = settings.getBoolean("SWITCH_DISPLAY", false);
+        swtDisplay.setChecked(displayValue);
+
         //Dialog for network and GPS is not available
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Network and GPS Alert!!!");
@@ -108,12 +152,11 @@ public class MainActivity extends AppCompatActivity {
         });
         alertDialog.create();
 
-        if(!(isNetworkAvailable() && checkGPSStatus(this))){
+        if(!(isNetworkAvailable() && checkGPSStatus(this))) {
             alertDialog.show();
         }
 
-
-
+        getResultsFromApi();
 
         //Opens the MainActivity as soon as the user gives the overlay permission
         handler = new Handler();
@@ -155,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        //For XIAOMI devices
+        /*//For XIAOMI devices
         if(Build.BRAND.equalsIgnoreCase("xiaomi") ) {
 
             if(!prefsForDevices.getBoolean("oneTimeDeviceXiaomi", false)) {
@@ -216,9 +259,113 @@ public class MainActivity extends AppCompatActivity {
                 editor.putBoolean("oneTimeDeviceVivo", true);
                 editor.commit();
             }
+        }*/
+
+
+    }
+
+    private void chooseAccount() {
+        if (com.example.devyankshaw.checking.Utils.checkPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
+            if (accountName != null) {
+                mCredential.setSelectedAccountName(accountName);
+                getResultsFromApi();
+            } else {
+                // Start a dialog from which the user can choose an account
+                startActivityForResult(mCredential.newChooseAccountIntent(), com.example.devyankshaw.checking.Utils.REQUEST_ACCOUNT_PICKER);
+            }
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.GET_ACCOUNTS}, Utils.REQUEST_PERMISSION_GET_ACCOUNTS);
         }
+    }
+
+    private void getResultsFromApi() {
+        if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Utils.REQUEST_PERMISSION_GET_ACCOUNTS:
+                chooseAccount();
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case Utils.REQUEST_ACCOUNT_PICKER:
+                if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
+                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    if (accountName != null) {
+                        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.apply();
+                        mCredential.setSelectedAccountName(accountName);
+                        getResultsFromApi();
+                    }
+                }
+                break;
+        }
+    }
 
 
+
+    public boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        String url = "https://www.google.com/maps/dir/?api=1";
+        //String origin = "&origin=" + "YourLocation";
+        String destination = "&destination=" + location.getLatitude() + "," + location.getLongitude();
+        try {
+            newUrl = new URL(url + destination);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        txtLocation = findViewById(R.id.txt_location);
+        txtLocation.setMovementMethod(LinkMovementMethod.getInstance());
+        txtLocation.setText(newUrl.toString());
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Log.d("Latitude","disable");
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Log.d("Latitude","enable");
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        Log.d("Latitude","status");
     }
 
     @Override
@@ -295,20 +442,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (requestCode == MY_CAMERA_REQUEST_CODE && Settings.canDrawOverlays(MainActivity.this)) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    floatTheViewOnTheScreen();
-                } else {
-                    requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+            swtDisplay.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        settings.edit().putBoolean("ENABLE_DISPLAY", true).commit();
+                    }else{
+                        settings.edit().putBoolean("ENABLE_DISPLAY", false).commit();
+                    }
+                    //Saving the state of the alarm switch
+                    settings.edit().putBoolean("SWITCH_DISPLAY", isChecked).commit();
                 }
-            }
+            });
+
         }
     }
 
@@ -379,5 +525,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        //moveTaskToBack(true);
     }
 }
