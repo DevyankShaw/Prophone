@@ -40,8 +40,7 @@
         <activity
             android:name=".LockScreenPassword"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" >
-        </activity>
+            android:theme="@style/AppFullScreenTheme"></activity>
         <activity
             android:name=".SecurityPassword.PasswordActivity"
             android:windowSoftInputMode="stateHidden" />
@@ -49,17 +48,14 @@
         <activity
             android:name=".LockScreenPattern"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme">
-        </activity>
+            android:theme="@style/AppFullScreenTheme"></activity>
         <activity android:name=".SecurityPassword.PatternActivity" />
         <activity android:name=".SecurityPassword.PinActivity" />
         <activity
             android:name=".LockScreenPin"
             android:screenOrientation="portrait"
-            android:theme="@style/AppFullScreenTheme" >
-        </activity>
+            android:theme="@style/AppFullScreenTheme"></activity>
         <activity android:name=".MainActivity" />
-
 
         <receiver
             android:name=".UserPresentBroadcastReceiver"
@@ -67,7 +63,6 @@
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
@@ -109,8 +104,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>

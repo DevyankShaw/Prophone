@@ -38,7 +38,7 @@ public class LockService extends Service {
         //Registering Broadcast Receiver
         userPresentBroadcastReceiver = new UserPresentBroadcastReceiver();
         IntentFilter filter1 = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        filter1.addAction(Intent.ACTION_USER_PRESENT);
+        filter1.addAction(Intent.ACTION_BOOT_COMPLETED);
         filter1.setPriority(999);
         registerReceiver(userPresentBroadcastReceiver, filter1);
 

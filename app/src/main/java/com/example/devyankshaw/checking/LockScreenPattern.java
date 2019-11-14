@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,7 +43,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,17 +77,20 @@ public class LockScreenPattern extends AppCompatActivity {
     private SurfaceTexture surfaceTexture;
     private Context mContext;
     private TextView txtPattern;
+    private TextView txtPatternStatus;
+    private FrameLayout frameLayout;
+
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
 
-                new SavePhotoTaskPattern().execute(data);
+            new SavePhotoTaskPattern().execute(data);
 
-                //Closing camera
-                camera.stopFaceDetection();
-                camera.stopPreview();
-                camera.lock();
-                camera.release();
+            //Closing camera
+            camera.stopFaceDetection();
+            camera.stopPreview();
+            camera.lock();
+            camera.release();
         }
     };
 
@@ -110,7 +113,7 @@ public class LockScreenPattern extends AppCompatActivity {
         return imageEncoded;
     }
 
-     //Check if this device has a camera
+    //Check if this device has a camera
     private static Camera openFrontCamera(Context context) {
         try {
             boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
@@ -141,7 +144,7 @@ public class LockScreenPattern extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pattern);
 
@@ -151,6 +154,8 @@ public class LockScreenPattern extends AppCompatActivity {
 
         layoutPattern = findViewById(R.id.layoutPattern);
         txtPattern = findViewById(R.id.textView_Pattern);
+        txtPatternStatus = findViewById(R.id.textView_Pattern_Status);
+        frameLayout = findViewById(R.id.frameLayoutPattern);
 
         FullScreencall();
 
@@ -213,7 +218,8 @@ public class LockScreenPattern extends AppCompatActivity {
 
                 } else {
                     patternLockView.setViewMode(PatternLockView.PatternViewMode.WRONG);
-                    FancyToast.makeText(LockScreenPattern.this, "Wrong Pattern!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
+                    //FancyToast.makeText(LockScreenPattern.this, "Wrong Pattern!!!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
+                    txtPatternStatus.setText("Wrong Pattern!!!");
                     patternWrongStatus++;
                     if (patternWrongStatus == 3) {
 
@@ -230,7 +236,7 @@ public class LockScreenPattern extends AppCompatActivity {
                         if (preferencesGlobal.getBoolean("ENABLE_DISPLAY", false)) {
                             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                             DatabaseReference uidRef = databaseReference.child(uid);
-                            uidRef.addValueEventListener(new ValueEventListener() {
+                            uidRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     String name = dataSnapshot.child("name").getValue().toString();
@@ -245,7 +251,8 @@ public class LockScreenPattern extends AppCompatActivity {
                             });
                         }
 
-                        FancyToast.makeText(LockScreenPattern.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
+                        //FancyToast.makeText(LockScreenPattern.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", FancyToast.LENGTH_LONG, FancyToast.WARNING, true).show();
+                        txtPatternStatus.setText("You have exceeded maximum attempts\n Please enter correct password");
                         patternWrongStatus = 0;
                     }
 
@@ -435,7 +442,7 @@ public class LockScreenPattern extends AppCompatActivity {
         }
     }
 
-    public void blockHomeButton(){
+    public void blockHomeButton() {
         mHomeWatcher = new HomeWatcher(this);
         mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
             @Override
@@ -463,7 +470,7 @@ public class LockScreenPattern extends AppCompatActivity {
 
     public void FullScreencall() {
         final View decorView = getWindow().getDecorView();
-        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
             @Override
             public void onSystemUiVisibilityChange(int visibility) {
                 if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
@@ -504,6 +511,14 @@ public class LockScreenPattern extends AppCompatActivity {
     class SavePhotoTaskPattern extends AsyncTask<byte[], Void, Bitmap> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            patternLockView.clearPattern();
+            patternLockView.setVisibility(View.GONE);
+            frameLayout.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
         protected Bitmap doInBackground(byte[]... bytes) {
 
             BitmapFactory.Options bfo = new BitmapFactory.Options();
@@ -527,6 +542,9 @@ public class LockScreenPattern extends AppCompatActivity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("imageSelfie", encodeTobase64(bitmap));
             editor.commit();
+
+            patternLockView.setVisibility(View.VISIBLE);
+            frameLayout.setVisibility(View.VISIBLE);
         }
     }
 }

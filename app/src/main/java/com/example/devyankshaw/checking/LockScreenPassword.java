@@ -76,6 +76,8 @@ public class LockScreenPassword extends AppCompatActivity {
     private MediaPlayer mp;
     private SurfaceTexture surfaceTexture;
     private Context mContext;
+    private TextView txtPasswordStatus;
+
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
@@ -148,6 +150,7 @@ public class LockScreenPassword extends AppCompatActivity {
         mContext = getApplicationContext();
         surfaceTexture = new SurfaceTexture(0);
         txtPassword = findViewById(R.id.textView_Password);
+        txtPasswordStatus = findViewById(R.id.textView_Password_Status);
 
         FullScreencall();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
@@ -223,7 +226,8 @@ public class LockScreenPassword extends AppCompatActivity {
                         }
                     }
                 }else{
-                    fancyToastWrong.makeText(LockScreenPassword.this, "Wrong Password!!!", fancyToastWrong.LENGTH_SHORT, fancyToastWrong.ERROR, true).show();
+                    //fancyToastWrong.makeText(LockScreenPassword.this, "Wrong Password!!!", fancyToastWrong.LENGTH_SHORT, fancyToastWrong.ERROR, true).show();
+                    txtPasswordStatus.setText("Wrong Password!!!");
                     passwordWrongStatus++;
                     if (passwordWrongStatus == 3) {
 
@@ -239,7 +243,7 @@ public class LockScreenPassword extends AppCompatActivity {
                         if (preferencesGlobal.getBoolean("ENABLE_DISPLAY", false)) {
                             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                             DatabaseReference uidRef = databaseReference.child(uid);
-                            uidRef.addValueEventListener(new ValueEventListener() {
+                            uidRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     String name = dataSnapshot.child("name").getValue().toString();
@@ -254,7 +258,8 @@ public class LockScreenPassword extends AppCompatActivity {
                             });
                         }
 
-                        fancyToastExceed.makeText(LockScreenPassword.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", fancyToastExceed.LENGTH_LONG, fancyToastExceed.WARNING, true).show();
+                        //fancyToastExceed.makeText(LockScreenPassword.this, "You exceeded maximum attempts\n  \t\t\tPlease enter correct password", fancyToastExceed.LENGTH_LONG, fancyToastExceed.WARNING, true).show();
+                        txtPasswordStatus.setText("You have exceeded maximum attempts\n Please enter correct password");
                         passwordWrongStatus = 0;
                     }
                 }
@@ -505,6 +510,13 @@ public class LockScreenPassword extends AppCompatActivity {
     class SavePhotoTaskPassword extends AsyncTask<byte[], Void, Bitmap> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            edtPassword.setVisibility(View.INVISIBLE);
+            btnSubmitPassword.setVisibility(View.GONE);
+        }
+
+        @Override
         protected Bitmap doInBackground(byte[]... bytes) {
 
             BitmapFactory.Options bfo = new BitmapFactory.Options();
@@ -528,6 +540,10 @@ public class LockScreenPassword extends AppCompatActivity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("imageSelfie", encodeTobase64(bitmap));
             editor.commit();
+
+            edtPassword.setVisibility(View.VISIBLE);
+            edtPassword.requestFocus();
+            btnSubmitPassword.setVisibility(View.VISIBLE);
         }
     }
 }

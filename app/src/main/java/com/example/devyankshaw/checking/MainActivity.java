@@ -2,7 +2,6 @@ package com.example.devyankshaw.checking;
 
 
 import android.Manifest;
-import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,7 +28,6 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -38,15 +36,11 @@ import androidx.core.content.ContextCompat;
 import com.example.devyankshaw.checking.OneTapLock.TapLock;
 import com.example.devyankshaw.checking.SecurityPassword.AddSecurityActivity;
 import com.example.devyankshaw.checking.WallpaperChange.Wallpaper;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.services.gmail.GmailScopes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
@@ -64,16 +58,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     private static final String PREF_ACCOUNT_NAME = "accountName";
-    private static final String[] SCOPES = {
-            GmailScopes.GMAIL_LABELS,
-            GmailScopes.GMAIL_COMPOSE,
-            GmailScopes.GMAIL_INSERT,
-            GmailScopes.GMAIL_MODIFY,
-            GmailScopes.GMAIL_READONLY,
-            GmailScopes.MAIL_GOOGLE_COM
-    };
-    private static final String TAG = "MainActivity";
-    public static GoogleAccountCredential mCredential;
     public String fileName = "";
     protected LocationManager locationManager;
     protected LocationListener locationListener;
@@ -93,11 +77,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(), Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff());
 
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
@@ -156,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             alertDialog.show();
         }
 
-        getResultsFromApi();
+        //getResultsFromApi();
 
         //Opens the MainActivity as soon as the user gives the overlay permission
         handler = new Handler();
@@ -263,59 +242,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
 
     }
-
-    private void chooseAccount() {
-        if (com.example.devyankshaw.checking.Utils.checkPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                getResultsFromApi();
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(mCredential.newChooseAccountIntent(), com.example.devyankshaw.checking.Utils.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.GET_ACCOUNTS}, Utils.REQUEST_PERMISSION_GET_ACCOUNTS);
-        }
-    }
-
-    private void getResultsFromApi() {
-        if (mCredential.getSelectedAccountName() == null) {
-            chooseAccount();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Utils.REQUEST_PERMISSION_GET_ACCOUNTS:
-                chooseAccount();
-                break;
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case Utils.REQUEST_ACCOUNT_PICKER:
-                if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
-                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    if (accountName != null) {
-                        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(PREF_ACCOUNT_NAME, accountName);
-                        editor.apply();
-                        mCredential.setSelectedAccountName(accountName);
-                        getResultsFromApi();
-                    }
-                }
-                break;
-        }
-    }
-
-
 
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this,

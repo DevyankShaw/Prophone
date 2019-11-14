@@ -5,7 +5,7 @@
     android:id="@+id/layoutPin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/animals"
+    android:background="@drawable/sky"
     android:fitsSystemWindows="true"
     tools:context=".LockScreenPin">
 
@@ -14,12 +14,12 @@
         android:id="@+id/frameLayout3"
         android:layout_width="194dp"
         android:layout_height="56dp"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/password_border"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.534"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout1">
 
         <Button
             android:id="@+id/btnSubmit"
@@ -33,7 +33,7 @@
     </FrameLayout>
 
     <FrameLayout
-        android:id="@+id/frameLayout"
+        android:id="@+id/frameLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="106dp"
@@ -183,10 +183,10 @@
         android:layout_width="318dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="47dp"
-        android:layout_marginTop="23dp"
+        android:layout_marginTop="100dp"
         android:layout_marginEnd="47dp"
         android:background="@drawable/password_border"
-        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/clock">
@@ -291,14 +291,25 @@
         android:layout_marginEnd="206dp"
         android:layout_marginBottom="65dp"
         android:gravity="center"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
         android:textColor="@color/white"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/clock" />
 
+    <TextView
+        android:id="@+id/textView_Pin_Status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_Pin" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
