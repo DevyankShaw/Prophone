@@ -17,23 +17,6 @@ public class UserPresentBroadcastReceiver extends BroadcastReceiver {
 
         prefs = context.getSharedPreferences(PREFS_NAME, 0);
 
-        /*Sent when the user is present after
-         * device wakes up (e.g when the keyguard is gone)
-         * */
-//        if(Intent.ACTION_USER_PRESENT.equals(intent.getAction())){
-//            Toast.makeText(context, "User Present", Toast.LENGTH_LONG).show();
-//        }
-        /*Device is shutting down. This is broadcast when the device
-         * is being shut down (completely turned off, not sleeping)
-         * */
-//        if (Intent.ACTION_USER_UNLOCKED.equals(intent.getAction())) {
-//           /* Intent intent1 = new Intent();
-//            intent1.setClassName(context.getPackageName(), LockScreenPin.class.getName());
-//            intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            context.startActivity(intent1);*/
-//            Toast.makeText(context, "User Unlocked", Toast.LENGTH_LONG).show();
-//        }
-
         if(Intent.ACTION_SCREEN_ON.equals(intent.getAction())){
             if(prefs.getBoolean("pinLockStatus", false)) {
                 Intent intentOne = new Intent(context, LockScreenPin.class);

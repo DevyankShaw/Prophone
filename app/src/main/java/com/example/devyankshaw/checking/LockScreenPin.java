@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -20,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,29 +31,30 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.gridlayout.widget.GridLayout;
 
 import com.example.devyankshaw.checking.HomeKeyListener.HomeWatcher;
 import com.example.devyankshaw.checking.HomeKeyListener.OnHomePressedListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import net.sargue.mailgun.Configuration;
-import net.sargue.mailgun.Mail;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -67,10 +70,12 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     private boolean switchAlarmTapped;
 
     DatabaseReference databaseReference;
+    public RelativeLayout layoutPin;
     private static final String TAG = "LockScreenPin";
     private MediaPlayer mp;
     public String fileName = "";
-    Configuration configuration;
+    SharedPreferences preferences;
+    String imageUrl;
 
     // To keep track of activity's window focus
     boolean currentFocus;
@@ -87,7 +92,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
     private int pinWrongStatus;
 
     private boolean notificationPanelPin;
-    public ConstraintLayout layoutPin;
+    private StorageReference mStorageRef;
     private Button btnSumbit;
     private EditText edtPin;
     private TextView txtPin,txtPinStatus;
@@ -275,6 +280,50 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         executeDelayed();
     }
 
+    /* Check if this device has a camera */
+    private static Camera openFrontCamera(Context context) {
+        try {
+            boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+            if (hasCamera) {
+                int cameraCount = 0;
+                Camera cam = null;
+                Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                cameraCount = Camera.getNumberOfCameras();
+                for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
+                    Camera.getCameraInfo(camIdx, cameraInfo);
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        try {
+                            cam = Camera.open(camIdx);
+                        } catch (RuntimeException e) {
+                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+
+                return cam;
+            }
+        } catch (Exception ex) {
+            Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return null;
+    }
+
+    private void getToDetails() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference uidRef = databaseReference.child(uid);
+        uidRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                usersEmail = dataSnapshot.child("email").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
@@ -283,12 +332,8 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen_pin);
 
-        configuration = new Configuration()
-                .apiKey("72217fce13742590a242a560493ea081-1df6ec32-dbbe568a")
-                .from("Test account", "devyankshaw68@gmail.com");
-
-
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+        mStorageRef = FirebaseStorage.getInstance().getReference("Users");
 
         mContext = getApplicationContext();
         surfaceTexture = new SurfaceTexture(0);
@@ -298,7 +343,7 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         layoutPin = findViewById(R.id.layoutPin);
 
         //Displaying the wallpaper image that is set by the user
-        SharedPreferences preferences = getSharedPreferences("WallpaperImage", MODE_PRIVATE);
+        preferences = getSharedPreferences("WallpaperImage", MODE_PRIVATE);
         if (preferences.getBoolean("isImage", false) == true && preferences.getBoolean("isImageChooser", false) == false) {
             int imageReference = preferences.getInt("imageReference", 0);
             layoutPin.setBackgroundResource(imageReference);
@@ -401,8 +446,6 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
                             mp.start();
                         }
 
-                        //new SendEmail().execute();
-
                         if (preferencesGlobal.getBoolean("ENABLE_DISPLAY", false)) {
                             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                             DatabaseReference uidRef = databaseReference.child(uid);
@@ -435,45 +478,30 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
 
     }
 
-    private void getToDetails() {
+    public String getImageUrl(final Bitmap image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] decodedByte = baos.toByteArray();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference uidRef = databaseReference.child(uid);
-        uidRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        final StorageReference reference = mStorageRef.child(uid);
+        reference.putBytes(decodedByte)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                imageUrl = uri.toString();
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                usersEmail = dataSnapshot.child("email").getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(mContext, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Exception e) {
+                    Log.i(TAG,e.getMessage());
             }
         });
-    }
-
-    class SendEmail extends AsyncTask<Void,Void,Void>{
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            getToDetails();
-            Mail.using(configuration)
-                    .to(usersEmail)
-                    .subject("This message has an text attachment")
-                    .text("Please find attached a file.")
-                    .multipart()
-                    .attachment(new File("/path/to/image.jpg"))
-                    .build()
-                    .send();
-            return null;
-        }
-    }
-
-    public Uri getImageUri(Bitmap inImage) {
-        String FILENAME = BitMapToString(inImage);
-        String PATH = "/mnt/sdcard/" + FILENAME;
-        File f = new File(PATH);
-        Uri yourUri = Uri.fromFile(f);
-        return yourUri;
+        return imageUrl;
     }
 
     // method for converting bitmap to base64
@@ -488,33 +516,17 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
         return imageEncoded;
     }
 
-    /* Check if this device has a camera */
-    private static Camera openFrontCamera(Context context) {
-        try {
-            boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
-            if (hasCamera) {
-                int cameraCount = 0;
-                Camera cam = null;
-                Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-                cameraCount = Camera.getNumberOfCameras();
-                for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
-                    Camera.getCameraInfo(camIdx, cameraInfo);
-                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        try {
-                            cam = Camera.open(camIdx);
-                        } catch (RuntimeException e) {
-                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-
-                return cam;
-            }
-        } catch (Exception ex) {
-            Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
+    public String getPathFromURI(Uri contentUri) {
+        String res = null;
+        String[] proj = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(contentUri, proj, "", null, "");
+        assert cursor != null;
+        if (cursor.moveToFirst()) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            res = cursor.getString(column_index);
         }
-
-        return null;
+        cursor.close();
+        return res;
     }
 
     public void blockHomeButton() {
@@ -654,6 +666,8 @@ public class LockScreenPin extends AppCompatActivity implements View.OnClickList
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("imageSelfie", encodeTobase64(bitmap));
             editor.commit();
+
+            //new SendEmail().execute(bitmap);
 
             frameLayout1.setVisibility(View.VISIBLE);
             frameLayout2.setVisibility(View.VISIBLE);

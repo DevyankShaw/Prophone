@@ -114,7 +114,7 @@ public class LockScreenPassword extends AppCompatActivity {
     /* Check if this device has a camera */
     private static Camera openFrontCamera(Context context) {
         try {
-            boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+            boolean hasCamera = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
             if (hasCamera) {
                 int cameraCount = 0;
                 Camera cam = null;

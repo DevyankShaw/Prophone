@@ -3,7 +3,6 @@ package com.example.devyankshaw.checking;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,6 +21,8 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -135,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             alertDialog.show();
         }
 
-        //getResultsFromApi();
 
         //Opens the MainActivity as soon as the user gives the overlay permission
         handler = new Handler();
@@ -174,72 +174,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 }
             }
         }
-
-
-
-        /*//For XIAOMI devices
-        if(Build.BRAND.equalsIgnoreCase("xiaomi") ) {
-
-            if(!prefsForDevices.getBoolean("oneTimeDeviceXiaomi", false)) {
-                // run your one time code
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-                startActivity(intent);
-
-                SharedPreferences.Editor editor = prefsForDevices.edit();
-                editor.putBoolean("oneTimeDeviceXiaomi", true);
-                editor.commit();
-            }
-        }
-
-
-        //For OPPO devices
-        if (Build.MANUFACTURER.equalsIgnoreCase("oppo")) {
-
-            if(!prefsForDevices.getBoolean("oneTimeDeviceOppo", false)) {
-                // run your one time code
-                try {
-                    Intent intent = new Intent();
-                    intent.setClassName("com.coloros.safecenter",
-                            "com.coloros.safecenter.permission.startup.StartupAppListActivity");
-                    startActivity(intent);
-                } catch (Exception e) {
-                    try {
-                        Intent intent = new Intent();
-                        intent.setClassName("com.oppo.safe",
-                                "com.oppo.safe.permission.startup.StartupAppListActivity");
-                        startActivity(intent);
-
-                    } catch (Exception ex) {
-                        try {
-                            Intent intent = new Intent();
-                            intent.setClassName("com.coloros.safecenter",
-                                    "com.coloros.safecenter.startupapp.StartupAppListActivity");
-                            startActivity(intent);
-                        } catch (Exception exx) {
-
-                        }
-                    }
-                }
-
-                SharedPreferences.Editor editor = prefsForDevices.edit();
-                editor.putBoolean("oneTimeDeviceOppo", true);
-                editor.commit();
-            }
-        }
-
-
-        //AutoStart permission for VIVO devices
-        if(Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-            if(!prefsForDevices.getBoolean("oneTimeDeviceVivo", false)) {
-                // run your one time code
-                autoLaunchVivo(MainActivity.this);
-                SharedPreferences.Editor editor = prefsForDevices.edit();
-                editor.putBoolean("oneTimeDeviceVivo", true);
-                editor.commit();
-            }
-        }*/
-
 
     }
 
@@ -427,30 +361,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_item,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-    private static void autoLaunchVivo(Context context) {
-        try {
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName("com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"));
-            context.startActivity(intent);
-        } catch (Exception e) {
-            try {
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName("com.vivo.permissionmanager",
-                        "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
-                context.startActivity(intent);
-            } catch (Exception ex) {
-                try {
-                    Intent intent = new Intent();
-                    intent.setClassName("com.iqoo.secure",
-                            "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager");
-                    context.startActivity(intent);
-                } catch (Exception exx) {
-                    ex.printStackTrace();
-                }
-            }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.logout:
+                mAuth.signOut();
+                startActivity(new Intent(this,SignInActivity.class));
+                finish();
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
