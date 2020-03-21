@@ -18,7 +18,7 @@ https://github.com/DevyankShaw/Prophone/blob/master/Final_Year_Project_Report.pd
 
 ## Bugs that need to be resolved
 
-Blocking power button options dialog and home button is not working on many phone manufacturers.
+Blocking power button options dialog and home button is not working on some mobile phone manufacturers like Honor, Samsung(One UI) and Realme.
 
 ## Sills Required
 
