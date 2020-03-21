@@ -36,3 +36,4 @@ Step 4: Connect the project to your Firebase account as a new project.
 
 Step 5: Open the Authentication under Project Overview in Firebase and then enable the sign-in method with email/password and phone.![SS2](https://user-images.githubusercontent.com/47057254/77229232-a1230900-6bb2-11ea-9bf7-3c158987c0b0.JPG)
 Step 6: Then run the project on the real mobile device and you are now good to go with the contribution.
+Step 7: Once you are completed with fixing the bug, you can send a Pull Request.
