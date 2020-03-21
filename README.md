@@ -38,3 +38,9 @@ Step 5: Open the Authentication under Project Overview in Firebase and then enab
 Step 6: Then run the project on the real mobile device and you are now good to go with the contribution.
 
 Step 7: Once you are completed with fixing the bug, you can send a Pull Request.
+
+## Support
+
+Facing Problems? contact me at [LinkedIn](https://www.linkedin.com/in/devyank-shaw-8a923a168/) i am always happy to help;
+
+Don't forget to star ⭐ the repo 😉, it's FREE.
