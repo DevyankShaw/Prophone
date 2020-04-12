@@ -14,7 +14,9 @@ https://github.com/DevyankShaw/Prophone/blob/master/Final_Year_Project_Report.pd
 
 ## A Demo Video
 
+![ezgif com-video-to-gif](https://user-images.githubusercontent.com/47057254/79074226-cebe2680-7d08-11ea-8862-df1cc4eaf30b.gif)
 ![ezgif com-video-to-gif (1)](https://user-images.githubusercontent.com/47057254/76681698-ba104500-661b-11ea-8005-dac186fce81c.gif)
+
 
 ## Bugs that need to be resolved
 
@@ -45,6 +47,7 @@ Facing Problems? contact me at [LinkedIn](https://www.linkedin.com/in/devyank-sh
 
 Don't forget to star ⭐ the repo.
 
+## License
 
 MIT License
 
