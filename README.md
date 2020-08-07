@@ -1,6 +1,10 @@
 # Prophone(Mobile Security App)
 
-An app which adds a security to the phone where if the user's phone is stolen then the thief cannot switch or restart the phone. 
+## Problem
+Generally, if a phone is stolen even if it has security, the thief or anyone else can press the power button and the power off or restart dialog appears and the phone is turned off and we can't able to track afterwards.
+
+## Solution
+An app which adds a security to the phone where if the user's phone is stolen then the thief cannot switch off or restart the phone until the correct security passcode is provided. 
 By this the user can get time to track the phone until the phone's battery is dead.
 
 ## Documentation
